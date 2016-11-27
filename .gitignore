@@ -1,0 +1,11 @@
+/bin/
+/.idea/
+/.idea_modules/
+/out/
+
+*.classpath
+*.project
+*.iml
+
+*.jar
+*.bat
