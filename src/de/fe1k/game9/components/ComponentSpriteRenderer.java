@@ -15,8 +15,8 @@ import de.nerogar.noise.util.Vector2f;
 import de.nerogar.noise.util.Vector3f;
 
 public class ComponentSpriteRenderer extends Component {
-	private DeferredRenderable renderable;
-	private DeferredRenderer renderer;
+	protected DeferredRenderable renderable;
+	protected DeferredRenderer renderer;
 	private Vector2f anchor;
 	private String sprite;
 
@@ -60,7 +60,7 @@ public class ComponentSpriteRenderer extends Component {
 						0f, 1f,
 				}
 		);
-		Texture2D colorTexture = Texture2DLoader.loadTexture(sprite, Texture2D.InterpolationType.LINEAR_MIPMAP);
+		Texture2D colorTexture = Texture2DLoader.loadTexture(sprite, Texture2D.InterpolationType.NEAREST_MIPMAP);
 		Texture2D normalTexture = Texture2DLoader.loadTexture("<normal.png>");
 		Texture2D lightTexture = Texture2DLoader.loadTexture("<red.png>");
 		DeferredContainer container = new DeferredContainer(mesh, null, colorTexture, normalTexture, lightTexture);

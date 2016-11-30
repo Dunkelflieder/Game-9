@@ -1,7 +1,7 @@
 package de.fe1k.game9;
 
 import de.fe1k.game9.components.ComponentMoving;
-import de.fe1k.game9.components.ComponentSpriteRenderer;
+import de.fe1k.game9.components.ComponentSpriteAnimationRenderer;
 import de.fe1k.game9.components.ComponentTestRotation;
 import de.fe1k.game9.entities.Entity;
 import de.fe1k.game9.events.Event;
@@ -51,7 +51,7 @@ public class Game {
 		float targetDelta = 1/60f;
 		timer.update(targetDelta);
 		Event.trigger(new EventUpdate(targetDelta));
-		Event.trigger(new EventBeforeRender());
+		Event.trigger(new EventBeforeRender(targetDelta, timer.getRuntime()));
 		renderer.render(camera);
 		window.bind();
 		RenderHelper.blitTexture(renderer.getColorOutput());
@@ -66,7 +66,7 @@ public class Game {
 	private void makeRenderableEntity() {
 		Entity entity = Entity.spawn();
 		entity.getScale().set(2.0f);
-		entity.addComponent(new ComponentSpriteRenderer(renderer, "<unit.png>", null));
+		entity.addComponent(new ComponentSpriteAnimationRenderer(renderer, "res/sprites/man.png", null, 6, 0.07f));
 		entity.addComponent(new ComponentTestRotation());
 		entity.addComponent(new ComponentMoving());
 	}
