@@ -1,8 +1,12 @@
 package de.fe1k.game9;
 
-import de.fe1k.game9.components.ComponentRotateBla;
+import de.fe1k.game9.components.ComponentMoving;
 import de.fe1k.game9.components.ComponentSpriteRenderer;
+import de.fe1k.game9.components.ComponentTestRotation;
 import de.fe1k.game9.entities.Entity;
+import de.fe1k.game9.events.Event;
+import de.fe1k.game9.events.EventBeforeRender;
+import de.fe1k.game9.events.EventUpdate;
 import de.nerogar.noise.Noise;
 import de.nerogar.noise.render.GLWindow;
 import de.nerogar.noise.render.PerspectiveCamera;
@@ -15,6 +19,15 @@ public class Game {
 	private DeferredRenderer renderer;
 	private PerspectiveCamera camera;
 	private Timer timer;
+
+	public Game() {
+		Noise.init();
+		setUpWindow();
+		setUpCamera();
+		setUpRenderer();
+		makeRenderableEntity();
+		timer = new Timer();
+	}
 
 	private void setUpRenderer() {
 		renderer = new DeferredRenderer(window.getWidth(), window.getHeight());
@@ -35,29 +48,26 @@ public class Game {
 
 	private void mainloop() {
 		GLWindow.updateAll();
-		timer.update(1/60f);
-		Entity.getAll().forEach(Entity::update);
-
+		float targetDelta = 1/60f;
+		timer.update(targetDelta);
+		Event.trigger(new EventUpdate(targetDelta));
+		Event.trigger(new EventBeforeRender());
 		renderer.render(camera);
 		window.bind();
 		RenderHelper.blitTexture(renderer.getColorOutput());
 	}
 
-	private void makeRenderableEntity() {
-		Entity entity = Entity.spawn();
-		entity.addComponent(new ComponentSpriteRenderer(renderer, "<unit.png>", null));
-		entity.addComponent(new ComponentRotateBla());
-	}
-
-	public Game() {
-		Noise.init();
-		setUpWindow();
-		setUpCamera();
-		setUpRenderer();
-		makeRenderableEntity();
-		timer = new Timer();
+	public void run() {
 		while (!window.shouldClose()) {
 			mainloop();
 		}
+	}
+
+	private void makeRenderableEntity() {
+		Entity entity = Entity.spawn();
+		entity.getScale().set(2.0f);
+		entity.addComponent(new ComponentSpriteRenderer(renderer, "<unit.png>", null));
+		entity.addComponent(new ComponentTestRotation());
+		entity.addComponent(new ComponentMoving());
 	}
 }

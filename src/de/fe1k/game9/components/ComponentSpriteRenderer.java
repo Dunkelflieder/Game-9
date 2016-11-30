@@ -1,5 +1,9 @@
 package de.fe1k.game9.components;
 
+import de.fe1k.game9.entities.Entity;
+import de.fe1k.game9.events.Event;
+import de.fe1k.game9.events.EventBeforeRender;
+import de.fe1k.game9.events.EventListener;
 import de.nerogar.noise.render.Mesh;
 import de.nerogar.noise.render.RenderProperties3f;
 import de.nerogar.noise.render.Texture2D;
@@ -30,6 +34,7 @@ public class ComponentSpriteRenderer extends Component {
 		this.renderer = renderer;
 		this.sprite = sprite;
 		rebuildRenderable();
+		Event.register(EventBeforeRender.class, this::beforeRender);
 	}
 
 	private void rebuildRenderable() {
@@ -81,11 +86,14 @@ public class ComponentSpriteRenderer extends Component {
 		rebuildRenderable();
 	}
 
-	@Override
-	public void update() {
-		Vector3f pos = getOwner().getPosition();
-		Vector3f scale = getOwner().getScale();
-		Vector3f rot = getOwner().getRotation();
+	private void beforeRender(EventBeforeRender event) {
+		if (!getOwner().isPresent()) {
+			return;
+		}
+		Entity owner = getOwner().get();
+		Vector3f pos = owner.getPosition();
+		Vector3f scale = owner.getScale();
+		Vector3f rot = owner.getRotation();
 		renderable.getRenderProperties().setXYZ(pos.getX(), pos.getY(), pos.getZ());
 		renderable.getRenderProperties().setScale(scale.getX(), scale.getY(), scale.getZ());
 		renderable.getRenderProperties().setPitch(rot.getX());
@@ -96,5 +104,6 @@ public class ComponentSpriteRenderer extends Component {
 	@Override
 	public void destroy() {
 		renderer.removeObject(renderable);
+		Event.unregister((EventListener<EventBeforeRender>) this::beforeRender);
 	}
 }

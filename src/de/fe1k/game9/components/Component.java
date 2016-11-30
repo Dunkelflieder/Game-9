@@ -3,13 +3,15 @@ package de.fe1k.game9.components;
 import de.fe1k.game9.entities.Entity;
 import de.fe1k.game9.exceptions.ComponentNotFoundException;
 
+import java.util.Optional;
+
 public abstract class Component {
-	private Entity owner;
+	private Optional<Entity> owner = Optional.empty();
 
 	/**
 	 * @return the entity that owns this component.
 	 */
-	public Entity getOwner() {
+	public Optional<Entity> getOwner() {
 		return owner;
 	}
 
@@ -19,8 +21,26 @@ public abstract class Component {
 	 * @param owner the entity's owner
 	 */
 	public void setOwner(Entity owner) {
-		this.owner = owner;
+		this.owner = Optional.ofNullable(owner);
 	}
+
+	public boolean dependenciesSatisfied() {
+		if (!getOwner().isPresent()) {
+			return false;
+		}
+		Depends depends = getClass().getAnnotation(Depends.class);
+		if (depends == null) {
+			return true;
+		}
+		for (Class<? extends Component> componentClass : depends.components()) {
+			if (!getOwner().get().hasComponent(componentClass)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public void destroy() {}
 
 	////////////////// STATIC STUFF //////////////////
 
@@ -44,8 +64,5 @@ public abstract class Component {
 		}
 		return (Class<T>) clazz;
 	}
-
-	public void update() {}
-	public void destroy() {}
 
 }

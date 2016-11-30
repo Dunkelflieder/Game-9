@@ -3,16 +3,14 @@ package de.fe1k.game9.entities;
 import de.fe1k.game9.components.Component;
 import de.fe1k.game9.exceptions.ComponentAlreadyExistsException;
 import de.fe1k.game9.exceptions.InvalidComponentException;
-import de.fe1k.game9.utils.IDList;
+import de.fe1k.game9.exceptions.MissingComponentDependenciesException;
 import de.nerogar.noise.util.Vector3f;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Stream;
 
-public class Entity implements IDList.UniqueId {
-	private long id;
+public class Entity {
+	private final long id;
 	private Vector3f position;
 	private Vector3f rotation;
 	private Vector3f scale;
@@ -24,6 +22,12 @@ public class Entity implements IDList.UniqueId {
 		this.rotation = new Vector3f();
 		this.scale = new Vector3f(1);
 		components = new HashMap<>();
+	}
+
+	private void throwOnMissingDependencies() {
+		if (!components.values().stream().allMatch(Component::dependenciesSatisfied)) {
+			throw new MissingComponentDependenciesException();
+		}
 	}
 
 	/**
@@ -59,6 +63,7 @@ public class Entity implements IDList.UniqueId {
 			Component component = componentClass.newInstance();
 			component.setOwner(this);
 			components.put(componentClass, component);
+			throwOnMissingDependencies();
 		} catch (InstantiationException | IllegalAccessException e) {
 			e.printStackTrace();
 			throw new InvalidComponentException();
@@ -74,12 +79,11 @@ public class Entity implements IDList.UniqueId {
 		if (hasComponent(component.getClass())) {
 			throw new ComponentAlreadyExistsException();
 		}
-		Entity previousOwner = component.getOwner();
-		if (previousOwner != null) {
-			previousOwner.removeComponent(component);
-		}
+		Optional<Entity> previousOwner = component.getOwner();
+		previousOwner.ifPresent(entity -> entity.removeComponent(component));
 		component.setOwner(this);
 		components.put(component.getClass(), component);
+		throwOnMissingDependencies();
 	}
 
 	/**
@@ -92,6 +96,7 @@ public class Entity implements IDList.UniqueId {
 		if (removed != null) {
 			removed.setOwner(null);
 		}
+		throwOnMissingDependencies();
 		return removed;
 	}
 
@@ -105,11 +110,8 @@ public class Entity implements IDList.UniqueId {
 		if (removed) {
 			component.setOwner(null);
 		}
+		throwOnMissingDependencies();
 		return removed;
-	}
-
-	public void update() {
-		components.values().forEach(Component::update);
 	}
 
 	/**
@@ -145,11 +147,11 @@ public class Entity implements IDList.UniqueId {
 
 	////////////////// STATIC STUFF //////////////////
 
-	private static IDList<Entity> entities = new IDList<>();
+	private static Map<Long, Entity> entities = new HashMap<>();
 	private static Random uniqueIdRandom = new Random();
 
 	public Entity getById(long id) {
-		return entities.getById(id);
+		return entities.get(id);
 	}
 
 	/**
@@ -158,7 +160,7 @@ public class Entity implements IDList.UniqueId {
 	 * @return stream of entities that have the component
 	 */
 	public static <T extends Component> Stream<Entity> getAllWithComponent(Class<T> componentClass) {
-		return entities.stream().filter(
+		return entities.values().stream().filter(
 				entity -> entity.hasComponent(componentClass)
 		);
 	}
@@ -169,7 +171,7 @@ public class Entity implements IDList.UniqueId {
 	 * @return stream of entities that have all the components
 	 */
 	public static <T extends Component> Stream<Entity> getAllWithComponents(List<Class<T>> componentClasses) {
-		return entities.stream().filter(
+		return entities.values().stream().filter(
 				entity -> componentClasses.stream().allMatch(entity::hasComponent)
 		);
 	}
@@ -178,13 +180,9 @@ public class Entity implements IDList.UniqueId {
 		return getAllWithComponent(componentClass).map(entity -> entity.getComponent(componentClass));
 	}
 
-	public static Stream<Entity> getAll() {
-		return entities.stream();
-	}
-
 	public static Entity spawn() {
 		Entity entity = new Entity(getUniqueId());
-		entities.add(entity);
+		entities.put(entity.getId(), entity);
 		return entity;
 	}
 
