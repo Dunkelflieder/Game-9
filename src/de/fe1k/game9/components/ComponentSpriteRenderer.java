@@ -1,13 +1,11 @@
 package de.fe1k.game9.components;
 
+import de.fe1k.game9.DeferredContainerBank;
 import de.fe1k.game9.entities.Entity;
 import de.fe1k.game9.events.Event;
 import de.fe1k.game9.events.EventBeforeRender;
 import de.fe1k.game9.events.EventListener;
-import de.nerogar.noise.render.Mesh;
 import de.nerogar.noise.render.RenderProperties3f;
-import de.nerogar.noise.render.Texture2D;
-import de.nerogar.noise.render.Texture2DLoader;
 import de.nerogar.noise.render.deferredRenderer.DeferredContainer;
 import de.nerogar.noise.render.deferredRenderer.DeferredRenderable;
 import de.nerogar.noise.render.deferredRenderer.DeferredRenderer;
@@ -41,29 +39,7 @@ public class ComponentSpriteRenderer extends Component {
 		if (renderable != null) {
 			renderer.removeObject(renderable);
 		}
-		float offX = anchor.getX();
-		float offY = anchor.getY();
-		Mesh mesh = new Mesh(
-				6,
-				4,
-				new int[]{0, 1, 3, 1, 2, 3},
-				new float[]{
-						0f-offX, 0f-offY, 0f,
-						1f-offX, 0f-offY, 0f,
-						1f-offX, 1f-offY, 0f,
-						0f-offX, 1f-offY, 0f
-				},
-				new float[]{
-						0f, 0f,
-						1f, 0f,
-						1f, 1f,
-						0f, 1f,
-				}
-		);
-		Texture2D colorTexture = Texture2DLoader.loadTexture(sprite, Texture2D.InterpolationType.NEAREST_MIPMAP);
-		Texture2D normalTexture = Texture2DLoader.loadTexture("<normal.png>");
-		Texture2D lightTexture = Texture2DLoader.loadTexture("<red.png>");
-		DeferredContainer container = new DeferredContainer(mesh, null, colorTexture, normalTexture, lightTexture);
+		DeferredContainer container = DeferredContainerBank.getContainer(sprite);
 		renderable = new DeferredRenderable(container, new RenderProperties3f());
 		renderer.addObject(renderable);
 	}
