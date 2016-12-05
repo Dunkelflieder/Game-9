@@ -13,7 +13,7 @@ import de.nerogar.noise.render.deferredRenderer.DeferredContainer;
 import de.nerogar.noise.render.deferredRenderer.DeferredRenderable;
 import de.nerogar.noise.render.deferredRenderer.DeferredRenderer;
 import de.nerogar.noise.util.Logger;
-import de.nerogar.noise.util.Vector3f;
+import de.nerogar.noise.util.Vector2f;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -47,7 +47,7 @@ public class MapLoader {
 						continue;
 					}
 					Entity entity = Entity.spawn();
-					entity.teleport(new Vector3f(x, y, 0));
+					entity.teleport(new Vector2f(x, y));
 					entitiesPerTile.get(tile).add(entity);
 				}
 			}
@@ -83,7 +83,7 @@ public class MapLoader {
 
 			VertexList vl = new VertexList();
 			for (Entity e : entities) {
-				Vector3f pos = e.getPosition();
+				Vector2f pos = e.getPosition();
 				float x = pos.getX();
 				float y = pos.getY();
 				int p0 = vl.addVertex(x + 0, y + 0, 0, 0, 0, 0, 0, 0);

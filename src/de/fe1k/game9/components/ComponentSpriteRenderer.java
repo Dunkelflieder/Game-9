@@ -8,7 +8,7 @@ import de.nerogar.noise.render.RenderProperties3f;
 import de.nerogar.noise.render.deferredRenderer.DeferredContainer;
 import de.nerogar.noise.render.deferredRenderer.DeferredRenderable;
 import de.nerogar.noise.render.deferredRenderer.DeferredRenderer;
-import de.nerogar.noise.util.Vector3f;
+import de.nerogar.noise.util.Vector2f;
 
 public class ComponentSpriteRenderer extends ComponentRenderer {
 	protected DeferredRenderable renderable;
@@ -46,14 +46,14 @@ public class ComponentSpriteRenderer extends ComponentRenderer {
 	}
 
 	private void beforeRender(EventBeforeRender event) {
-		Vector3f pos = getOwner().getPosition();
-		Vector3f scale = getOwner().getScale();
-		Vector3f rot = getOwner().getRotation();
-		renderable.getRenderProperties().setXYZ(pos.getX(), pos.getY(), pos.getZ());
-		renderable.getRenderProperties().setScale(scale.getX(), scale.getY(), scale.getZ());
-		renderable.getRenderProperties().setPitch(rot.getX());
-		renderable.getRenderProperties().setYaw(rot.getY());
-		renderable.getRenderProperties().setRoll(rot.getZ());
+		Vector2f pos = getOwner().getPosition();
+		Vector2f scale = getOwner().getScale();
+		float rot = getOwner().getRotation();
+		renderable.getRenderProperties().setXYZ(pos.getX(), pos.getY(), 0);
+		renderable.getRenderProperties().setScale(scale.getX(), scale.getY(), 1);
+		renderable.getRenderProperties().setPitch(0);
+		renderable.getRenderProperties().setYaw(0);
+		renderable.getRenderProperties().setRoll(rot);
 	}
 
 	@Override

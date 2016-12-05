@@ -8,7 +8,6 @@ import de.fe1k.game9.events.EventListener;
 import de.fe1k.game9.events.EventUpdate;
 import de.fe1k.game9.utils.Bounding;
 import de.nerogar.noise.util.Vector2f;
-import de.nerogar.noise.util.Vector3f;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,10 +61,12 @@ public class SystemCollision implements GameSystem {
 				if (escape.isPresent()) {
 					Vector2f vector2f = escape.get();
 					if (Math.abs(vector2f.getX()) < Math.abs(vector2f.getY())) {
-						entity.move(new Vector3f(vector2f.getX(), 0, 0));
+						vector2f.setY(0);
+						entity.move(vector2f);
 						movingComponent.velocity.setX(0);
 					} else {
-						entity.move(new Vector3f(0, vector2f.getY(), 0));
+						vector2f.setX(0);
+						entity.move(vector2f);
 						movingComponent.velocity.setY(0);
 					}
 				}

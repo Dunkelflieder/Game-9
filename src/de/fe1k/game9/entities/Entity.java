@@ -8,7 +8,7 @@ import de.fe1k.game9.events.EventEntitySpawned;
 import de.fe1k.game9.exceptions.ComponentAlreadyExistsException;
 import de.fe1k.game9.exceptions.InvalidComponentException;
 import de.fe1k.game9.exceptions.MissingComponentDependenciesException;
-import de.nerogar.noise.util.Vector3f;
+import de.nerogar.noise.util.Vector2f;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -19,16 +19,15 @@ import java.util.stream.Stream;
 public class Entity {
 	private final long id;
 
-	private Vector3f position;
-
-	private Vector3f rotation;
-	private Vector3f scale;
+	private Vector2f position;
+	private float rotation;
+	private Vector2f scale;
 	private HashMap<Class<? extends Component>, Component> components;
 	private Entity(long id) {
 		this.id = id;
-		this.position = new Vector3f();
-		this.rotation = new Vector3f();
-		this.scale = new Vector3f(1);
+		this.position = new Vector2f();
+		this.rotation = 0;
+		this.scale = new Vector2f(1);
 		components = new HashMap<>();
 	}
 
@@ -138,29 +137,29 @@ public class Entity {
 		return id;
 	}
 
-	public void teleport(Vector3f to) {
+	public void teleport(Vector2f to) {
 		to = to.clone();
-		Vector3f from = position.clone();
+		Vector2f from = position.clone();
 		position = to;
 		Event.trigger(new EventEntityMoved(this, from, to));
 	}
 
-	public void move(Vector3f delta) {
-		Vector3f from = position.clone();
-		Vector3f to = position.added(delta);
+	public void move(Vector2f delta) {
+		Vector2f from = position.clone();
+		Vector2f to = position.added(delta);
 		position = to;
 		Event.trigger(new EventEntityMoved(this, from, to));
 	}
 
-	public Vector3f getPosition() {
+	public Vector2f getPosition() {
 		return position;
 	}
 
-	public Vector3f getRotation() {
+	public float getRotation() {
 		return rotation;
 	}
 
-	public Vector3f getScale() {
+	public Vector2f getScale() {
 		return scale;
 	}
 

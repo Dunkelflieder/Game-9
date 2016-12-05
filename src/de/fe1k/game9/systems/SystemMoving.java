@@ -6,7 +6,6 @@ import de.fe1k.game9.events.Event;
 import de.fe1k.game9.events.EventListener;
 import de.fe1k.game9.events.EventUpdate;
 import de.nerogar.noise.util.Vector2f;
-import de.nerogar.noise.util.Vector3f;
 
 public class SystemMoving implements GameSystem {
 	public static final Vector2f GRAVITY = new Vector2f(0f, -10f);
@@ -23,8 +22,7 @@ public class SystemMoving implements GameSystem {
 	private void updateOne(float deltaTime, ComponentMoving comp) {
 		comp.velocity.add(comp.gravity.multiplied(deltaTime));
 		comp.velocity.multiply(1 - (comp.friction*deltaTime));
-		Vector3f newPos = comp.getOwner().getPosition().added(comp.velocity.multiplied(deltaTime));
-		comp.getOwner().teleport(newPos);
+		comp.getOwner().move(comp.velocity.multiplied(deltaTime));
 	}
 
 	@Override

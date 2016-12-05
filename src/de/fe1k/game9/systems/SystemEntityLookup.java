@@ -3,7 +3,7 @@ package de.fe1k.game9.systems;
 import de.fe1k.game9.entities.Entity;
 import de.fe1k.game9.events.*;
 import de.fe1k.game9.utils.Vector2i;
-import de.nerogar.noise.util.Vector3f;
+import de.nerogar.noise.util.Vector2f;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,7 +22,7 @@ public class SystemEntityLookup implements GameSystem {
 	}
 
 	private void addEntity(Entity entity) {
-		Vector2i pos = vector3fTo2i(entity.getPosition());
+		Vector2i pos = vector2fTo2i(entity.getPosition());
 		if (!entityLookup.containsKey(pos)) {
 			entityLookup.put(pos, new ArrayList<>());
 		}
@@ -30,7 +30,7 @@ public class SystemEntityLookup implements GameSystem {
 	}
 
 	private void removeEntity(Entity entity) {
-		removeEntity(entity, vector3fTo2i(entity.getPosition()));
+		removeEntity(entity, vector2fTo2i(entity.getPosition()));
 	}
 
 	private void removeEntity(Entity entity, Vector2i position) {
@@ -39,12 +39,12 @@ public class SystemEntityLookup implements GameSystem {
 		}
 	}
 
-	private Vector2i vector3fTo2i(Vector3f v) {
+	private Vector2i vector2fTo2i(Vector2f v) {
 		return new Vector2i((int) Math.floor(v.getX()), (int) Math.floor(v.getY()));
 	}
 
 	private void entityMoved(EventEntityMoved event) {
-		Vector2i oldPos = vector3fTo2i(event.from);
+		Vector2i oldPos = vector2fTo2i(event.from);
 		removeEntity(event.entity, oldPos);
 		addEntity(event.entity);
 	}

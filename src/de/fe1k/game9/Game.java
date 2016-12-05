@@ -18,7 +18,7 @@ import de.nerogar.noise.render.OrthographicCamera;
 import de.nerogar.noise.render.RenderHelper;
 import de.nerogar.noise.render.deferredRenderer.DeferredRenderer;
 import de.nerogar.noise.util.Timer;
-import de.nerogar.noise.util.Vector3f;
+import de.nerogar.noise.util.Vector2f;
 
 public class Game {
 	private GLWindow window;
@@ -99,7 +99,7 @@ public class Game {
 	private void makeRenderableEntity() {
 		Entity entity = Entity.spawn();
 		entity.getScale().set(1.0f);
-		entity.teleport(new Vector3f(10, 10, 0));
+		entity.teleport(new Vector2f(10, 10));
 		entity.addComponent(new ComponentSpriteAnimationRenderer(renderer, "man", 6, 0.07f));
 		entity.addComponent(new ComponentMoving());
 		entity.addComponent(new ComponentBounding(new Bounding(0, 0, 1, 1)));
