@@ -18,10 +18,10 @@ public class DeferredContainerBank {
 		return "res/sprites/" + name + "/";
 	}
 
-	private static DeferredContainer createContainer(String name) {
-		float offX = 0.5f;
-		float offY = 0.5f;
-		Mesh mesh = new Mesh(
+	private static Mesh createMesh() {
+		float offX = 0f;
+		float offY = 0f;
+		return new Mesh(
 				6,
 				4,
 				new int[]{0, 1, 3, 1, 2, 3},
@@ -38,6 +38,12 @@ public class DeferredContainerBank {
 						0f, 1f,
 				}
 		);
+	}
+
+	private static DeferredContainer createContainer(String name, Mesh mesh) {
+		if (mesh == null) {
+			mesh = createMesh();
+		}
 		String colorPath = getBasePath(name) + "color.png";
 		Texture2D colorTexture;
 		if (new File(colorPath).exists()) {
@@ -63,9 +69,9 @@ public class DeferredContainerBank {
 		return new DeferredContainer(mesh, null, colorTexture, normalTexture, lightTexture);
 	}
 
-	public static DeferredContainer getContainer(String name) {
+	public static DeferredContainer getContainer(String name, Mesh mesh) {
 		if (!containers.containsKey(name)) {
-			containers.put(name, createContainer(name));
+			containers.put(name, createContainer(name, mesh));
 		}
 		return containers.get(name);
 	}

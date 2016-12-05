@@ -5,7 +5,6 @@ import de.fe1k.game9.events.EventBeforeRender;
 import de.nerogar.noise.render.Shader;
 import de.nerogar.noise.render.deferredRenderer.DeferredContainer;
 import de.nerogar.noise.render.deferredRenderer.DeferredRenderer;
-import de.nerogar.noise.util.Vector2f;
 
 public class ComponentSpriteAnimationRenderer extends ComponentSpriteRenderer {
 
@@ -17,8 +16,8 @@ public class ComponentSpriteAnimationRenderer extends ComponentSpriteRenderer {
 	private int   currentFrame;
 	private float lastUpdate;
 
-	public ComponentSpriteAnimationRenderer(DeferredRenderer renderer, String sprite, Vector2f anchor, int frames, float delay) {
-		super(renderer, sprite, anchor);
+	public ComponentSpriteAnimationRenderer(DeferredRenderer renderer, String sprite, int frames, float delay) {
+		super(renderer, sprite);
 		this.frames = frames;
 		this.delay = delay;
 		Event.register(EventBeforeRender.class, this::beforeRender);

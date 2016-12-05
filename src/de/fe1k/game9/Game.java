@@ -1,24 +1,29 @@
 package de.fe1k.game9;
 
+import de.fe1k.game9.components.ComponentBounding;
 import de.fe1k.game9.components.ComponentMoving;
 import de.fe1k.game9.components.ComponentSpriteAnimationRenderer;
-import de.fe1k.game9.components.ComponentTestRotation;
 import de.fe1k.game9.entities.Entity;
 import de.fe1k.game9.events.Event;
 import de.fe1k.game9.events.EventBeforeRender;
 import de.fe1k.game9.events.EventUpdate;
 import de.fe1k.game9.map.MapLoader;
+import de.fe1k.game9.systems.SystemCollision;
+import de.fe1k.game9.systems.SystemEntityLookup;
+import de.fe1k.game9.systems.SystemMoving;
+import de.fe1k.game9.utils.Bounding;
 import de.nerogar.noise.Noise;
 import de.nerogar.noise.render.GLWindow;
-import de.nerogar.noise.render.PerspectiveCamera;
+import de.nerogar.noise.render.OrthographicCamera;
 import de.nerogar.noise.render.RenderHelper;
 import de.nerogar.noise.render.deferredRenderer.DeferredRenderer;
 import de.nerogar.noise.util.Timer;
+import de.nerogar.noise.util.Vector3f;
 
 public class Game {
 	private GLWindow window;
 	private DeferredRenderer renderer;
-	private PerspectiveCamera camera;
+	private OrthographicCamera camera;
 	private Timer timer;
 	private long lastFpsUpdate;
 
@@ -27,11 +32,22 @@ public class Game {
 		setUpWindow();
 		setUpCamera();
 		setUpRenderer();
-		for (int i = 0; i < 50; i++) {
+		setUpSystems();
+		//for (int i = 0; i < 50; i++) {
 			MapLoader.loadMap(renderer, "res/map/map0.png");
-		}
+		//}
 		makeRenderableEntity();
 		timer = new Timer();
+	}
+
+	private void setUpSystems() {
+		SystemMoving systemMoving = new SystemMoving();
+		SystemEntityLookup systemEntityLookup = new SystemEntityLookup();
+		SystemCollision systemCollision = new SystemCollision(systemEntityLookup);
+
+		systemMoving.start();
+		systemEntityLookup.start();
+		systemCollision.start();
 	}
 
 	private void setUpRenderer() {
@@ -47,8 +63,8 @@ public class Game {
 	}
 
 	private void setUpCamera() {
-		camera = new PerspectiveCamera(80, (float) window.getWidth()/window.getHeight(), 0.01f, 10000.0f);
-		camera.setXYZ(0, 0, 2);
+		camera = new OrthographicCamera(20, (float) window.getWidth()/window.getHeight(), 10, -10);
+		camera.setXYZ(10, 10, 10);
 	}
 
 	private void displayFPS() {
@@ -82,9 +98,10 @@ public class Game {
 
 	private void makeRenderableEntity() {
 		Entity entity = Entity.spawn();
-		entity.getScale().set(2.0f);
-		entity.addComponent(new ComponentSpriteAnimationRenderer(renderer, "man", null, 6, 0.07f));
-		entity.addComponent(new ComponentTestRotation());
+		entity.getScale().set(1.0f);
+		entity.teleport(new Vector3f(10, 10, 0));
+		entity.addComponent(new ComponentSpriteAnimationRenderer(renderer, "man", 6, 0.07f));
 		entity.addComponent(new ComponentMoving());
+		entity.addComponent(new ComponentBounding(new Bounding(0, 0, 1, 1)));
 	}
 }
