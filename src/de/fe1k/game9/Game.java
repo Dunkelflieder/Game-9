@@ -1,6 +1,7 @@
 package de.fe1k.game9;
 
 import de.fe1k.game9.components.ComponentBounding;
+import de.fe1k.game9.components.ComponentLight;
 import de.fe1k.game9.components.ComponentMoving;
 import de.fe1k.game9.components.ComponentSpriteAnimationRenderer;
 import de.fe1k.game9.entities.Entity;
@@ -17,6 +18,7 @@ import de.nerogar.noise.render.GLWindow;
 import de.nerogar.noise.render.OrthographicCamera;
 import de.nerogar.noise.render.RenderHelper;
 import de.nerogar.noise.render.deferredRenderer.DeferredRenderer;
+import de.nerogar.noise.util.Color;
 import de.nerogar.noise.util.Timer;
 import de.nerogar.noise.util.Vector2f;
 
@@ -50,10 +52,14 @@ public class Game {
 
 	private void setUpRenderer() {
 		renderer = new DeferredRenderer(window.getWidth(), window.getHeight());
+
+		renderer.setSunLightBrightness(0);
+		renderer.setAmbientOcclusionEnabled(false);
+		renderer.setMinAmbientBrightness(0.1f);
 	}
 
 	private void setUpWindow() {
-		window = new GLWindow("Game-9", 800, 600, true, 0, null, null);
+		window = new GLWindow("Game-9", 1280, 720, true, 0, null, null);
 		window.setSizeChangeListener((int width, int height) -> {
 			renderer.setFrameBufferResolution(width, height);
 			camera.setAspect((float) width/height);
@@ -61,7 +67,7 @@ public class Game {
 	}
 
 	private void setUpCamera() {
-		camera = new OrthographicCamera(20, (float) window.getWidth()/window.getHeight(), 10, -10);
+		camera = new OrthographicCamera(20, (float) window.getWidth()/window.getHeight(), 100, -100);
 		camera.setXYZ(10, 10, 10);
 	}
 
@@ -100,5 +106,6 @@ public class Game {
 		entity.addComponent(new ComponentSpriteAnimationRenderer(renderer, "man", 6, 0.07f));
 		entity.addComponent(new ComponentMoving());
 		entity.addComponent(new ComponentBounding(new Bounding(0, 0, 1, 1)));
+		entity.addComponent(new ComponentLight(renderer, new Color(1.0f, 0.8f, 0.8f, 0.0f), 20, 3));
 	}
 }
