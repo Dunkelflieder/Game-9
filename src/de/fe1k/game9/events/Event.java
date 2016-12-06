@@ -10,6 +10,10 @@ public interface Event {
 		globalEventManager.register(eventClass, listener);
 	}
 
+	static <T extends Event> void registerOnce(Class<T> eventClass, EventListener<? super T> listener) {
+		globalEventManager.registerOnce(eventClass, listener);
+	}
+
 	static void unregister(EventListener<? extends Event> listener) {
 		globalEventManager.unregister(listener);
 	}

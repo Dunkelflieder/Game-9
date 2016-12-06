@@ -1,39 +1,47 @@
 package de.fe1k.game9.events;
 
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 public class EventManager {
 
-	private Map<EventListener<? extends Event>, Class<? extends Event>> listeners;
-	private Map<EventListener<? extends Event>, Class<? extends Event>> listenersToAdd;
-	private Set<EventListener<? extends Event>> listenersToRemove;
+	private class EventListenerMap extends HashMap<EventListener<? extends Event>, Class<? extends Event>> {}
+
+	private EventListenerMap listeners;
+	private EventListenerMap listenersOnce;
 
 	public EventManager() {
-		listeners = new HashMap<>();
-		listenersToAdd = new HashMap<>();
-		listenersToRemove = new HashSet<>();
+		listeners = new EventListenerMap();
+		listenersOnce = new EventListenerMap();
 	}
 
 	public <T extends Event> void register(Class<T> eventClass, EventListener<? super T> listener) {
-		listenersToAdd.put(listener, eventClass);
+		listeners.put(listener, eventClass);
+	}
+
+	public <T extends Event> void registerOnce(Class<T> eventClass, EventListener<? super T> listener) {
+		listenersOnce.put(listener, eventClass);
 	}
 
 	public void unregister(EventListener<? extends Event> listener) {
-		listenersToRemove.add(listener);
+		listeners.remove(listener);
 	}
 
 	@SuppressWarnings("unchecked")
 	public <T extends Event> void trigger(T event) {
-		listenersToRemove.forEach(listeners::remove);
-		listenersToRemove.clear();
-		listeners.putAll(listenersToAdd);
-		listenersToAdd.clear();
+		EventListenerMap listeners = new EventListenerMap();
+		listeners.putAll(this.listeners);
+		EventListenerMap listenersOnce = new EventListenerMap();
+		listenersOnce.putAll(this.listenersOnce);
+		this.listenersOnce.clear();
+
 		listeners.entrySet().stream()
 				.filter(entry -> entry.getValue().isInstance(event))
 				.forEach(entry -> ((EventListener<T>) entry.getKey()).onEvent(event));
+		listenersOnce.entrySet().stream()
+				.filter(entry -> entry.getValue().isInstance(event))
+				.forEach(entry -> ((EventListener<T>) entry.getKey()).onEvent(event));
+		listenersOnce.entrySet().removeIf(entry -> entry.getValue().isInstance(event));
+		this.listenersOnce.putAll(listenersOnce);
 	}
 
 }

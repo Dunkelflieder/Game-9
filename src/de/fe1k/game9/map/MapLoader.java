@@ -46,8 +46,7 @@ public class MapLoader {
 						Logger.getErrorStream().printf("Unrecognized tile for color: 0x%06x", color);
 						continue;
 					}
-					Entity entity = Entity.spawn();
-					entity.teleport(new Vector2f(x, y));
+					Entity entity = Entity.spawn(new Vector2f(x, y));
 					entitiesPerTile.get(tile).add(entity);
 				}
 			}

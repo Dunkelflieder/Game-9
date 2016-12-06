@@ -23,9 +23,9 @@ public class Entity {
 	private float rotation;
 	private Vector2f scale;
 	private HashMap<Class<? extends Component>, Component> components;
-	private Entity(long id) {
+	private Entity(long id, Vector2f position) {
 		this.id = id;
-		this.position = new Vector2f();
+		this.position = position;
 		this.rotation = 0;
 		this.scale = new Vector2f(1);
 		components = new HashMap<>();
@@ -138,19 +138,29 @@ public class Entity {
 	}
 
 	public void teleport(Vector2f to) {
-		to = to.clone();
+		if (to.equals(position)) {
+			return;
+		}
 		Vector2f from = position.clone();
-		position = to;
-		Event.trigger(new EventEntityMoved(this, from, to));
+		position.set(to);
+		Event.trigger(new EventEntityMoved(this, from, position.clone()));
 	}
 
 	public void move(Vector2f delta) {
+		if (delta.getX() == 0 && delta.getY() == 0) {
+			return;
+		}
 		Vector2f from = position.clone();
-		Vector2f to = position.added(delta);
-		position = to;
-		Event.trigger(new EventEntityMoved(this, from, to));
+		position.add(delta);
+		Event.trigger(new EventEntityMoved(this, from, position.clone()));
 	}
 
+	/**
+	 * Getter for the position of this entity.
+	 * DO NOT directly modify the vector returned by this, instead
+	 * use the {@link #teleport(Vector2f)} or {@link #move(Vector2f)} method instead.
+	 * @return position of this entity
+	 */
 	public Vector2f getPosition() {
 		return position;
 	}
@@ -231,8 +241,8 @@ public class Entity {
 		return getAllWithComponent(componentClass).map(entity -> entity.getComponent(componentClass));
 	}
 
-	public static Entity spawn() {
-		Entity entity = new Entity(getUniqueId());
+	public static Entity spawn(Vector2f position) {
+		Entity entity = new Entity(getUniqueId(), position);
 		entities.put(entity.getId(), entity);
 		Event.trigger(new EventEntitySpawned(entity));
 		return entity;
