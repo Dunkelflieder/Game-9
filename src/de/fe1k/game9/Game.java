@@ -9,6 +9,7 @@ import de.fe1k.game9.events.Event;
 import de.fe1k.game9.events.EventBeforeRender;
 import de.fe1k.game9.events.EventUpdate;
 import de.fe1k.game9.map.MapLoader;
+import de.fe1k.game9.systems.SystemCallbacks;
 import de.fe1k.game9.systems.SystemCollision;
 import de.fe1k.game9.systems.SystemEntityLookup;
 import de.fe1k.game9.systems.SystemMoving;
@@ -44,10 +45,12 @@ public class Game {
 		SystemMoving systemMoving = new SystemMoving();
 		SystemEntityLookup systemEntityLookup = new SystemEntityLookup();
 		SystemCollision systemCollision = new SystemCollision(systemEntityLookup);
+		SystemCallbacks systemCallbacks = new SystemCallbacks();
 
 		systemMoving.start();
 		systemEntityLookup.start();
 		systemCollision.start();
+		systemCallbacks.start();
 	}
 
 	private void setUpRenderer() {
