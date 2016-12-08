@@ -33,5 +33,7 @@ public class ComponentLight extends Component {
 		super.destroy();
 
 		renderer.getLightContainer().remove(light);
+
+		Event.unregister(EventBeforeRender.class, this::updateLight);
 	}
 }

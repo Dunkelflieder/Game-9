@@ -255,9 +255,9 @@ public class Entity {
 
 	public static void despawn(long entityId) {
 		Entity removedEntity = entities.remove(entityId);
-		if (removedEntity != null) {
-			Event.trigger(new EventEntityDestroyed(removedEntity));
-		}
+
+		removedEntity.destroy();
+		Event.trigger(new EventEntityDestroyed(removedEntity));
 
 	}
 

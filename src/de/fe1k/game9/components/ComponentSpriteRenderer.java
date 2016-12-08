@@ -14,14 +14,28 @@ public class ComponentSpriteRenderer extends ComponentRenderer {
 	protected DeferredRenderer renderer;
 	private String sprite;
 
+	private float z;
+
 	/**
 	 * This component causes a 2D-sprite to be rendered by the given renderer.
 	 * @param renderer renderer to render the sprite in
 	 * @param sprite filepath of the sprite
 	 */
 	public ComponentSpriteRenderer(DeferredRenderer renderer, String sprite) {
+		this(renderer, sprite, 0);
+	}
+
+	/**
+	 * This component causes a 2D-sprite to be rendered by the given renderer.
+	 * @param renderer renderer to render the sprite in
+	 * @param sprite filepath of the sprite
+	 * @param z the z value for rendering
+	 */
+	public ComponentSpriteRenderer(DeferredRenderer renderer, String sprite, float z) {
 		this.renderer = renderer;
 		this.sprite = sprite;
+		this.z = z;
+
 		rebuildRenderable();
 		Event.register(EventBeforeRender.class, this::beforeRender);
 	}
@@ -48,7 +62,7 @@ public class ComponentSpriteRenderer extends ComponentRenderer {
 		Vector2f pos = getOwner().getPosition();
 		Vector2f scale = getOwner().getScale();
 		float rot = getOwner().getRotation();
-		renderable.getRenderProperties().setXYZ(pos.getX(), pos.getY(), 0);
+		renderable.getRenderProperties().setXYZ(pos.getX(), pos.getY(), z);
 		renderable.getRenderProperties().setScale(scale.getX(), scale.getY(), 1);
 		renderable.getRenderProperties().setPitch(0);
 		renderable.getRenderProperties().setYaw(0);

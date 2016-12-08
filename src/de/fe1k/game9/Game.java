@@ -110,6 +110,7 @@ public class Game {
 		player.addComponent(new ComponentMoving());
 		player.addComponent(new ComponentBounding(new Bounding(0, 0, 1, 1)));
 		player.addComponent(new ComponentLight(renderer, new Color(1.0f, 0.8f, 0.8f, 0.0f), 20, 3));
+		player.addComponent(new ComponentDeathAnimation(renderer));
 		ComponentControllable control = new ComponentControllable(window.getInputHandler());
 		player.addComponent(control);
 		control.resetPosition();

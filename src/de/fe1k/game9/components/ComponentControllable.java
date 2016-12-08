@@ -3,6 +3,7 @@ package de.fe1k.game9.components;
 import de.fe1k.game9.entities.Entity;
 import de.fe1k.game9.events.Event;
 import de.fe1k.game9.events.EventCollision;
+import de.fe1k.game9.events.EventEntityDestroyed;
 import de.fe1k.game9.events.EventUpdate;
 import de.fe1k.game9.utils.Direction;
 import de.nerogar.noise.input.InputHandler;
@@ -40,6 +41,7 @@ public class ComponentControllable extends Component {
 	private void collision(EventCollision event) {
 		if (event.collisionDirection.isHorizontal()) {
 			// death
+			Event.trigger(new EventEntityDestroyed(getOwner()));
 			resetPosition();
 		}
 	}
