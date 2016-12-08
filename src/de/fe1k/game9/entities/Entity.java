@@ -10,10 +10,7 @@ import de.fe1k.game9.exceptions.InvalidComponentException;
 import de.fe1k.game9.exceptions.MissingComponentDependenciesException;
 import de.nerogar.noise.util.Vector2f;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class Entity {
@@ -220,25 +217,18 @@ public class Entity {
 	}
 
 	/**
-	 * Returns all entities that have a given component specified by class.
-	 * @param componentClass the component class to check for
-	 * @return stream of entities that have the component
-	 */
-	private static <T extends Component> Stream<Entity> getAllWithComponent(Class<T> componentClass) {
-		return entities.values().stream().filter(
-				entity -> entity.hasComponent(componentClass)
-		);
-	}
-
-	/**
 	 * Returns all entities that have all the given components specified by classes.
 	 * @param componentClasses list of component classes to check for
 	 * @return stream of entities that have all the components
 	 */
-	public static Stream<Entity> getAllWithComponents(Class<? extends Component>... componentClasses) {
-		return entities.values().stream().filter(
-				entity -> Arrays.stream(componentClasses).allMatch(entity::hasComponent)
-		);
+	public static List<Entity> getAllWithComponentss(Class<? extends Component>... componentClasses) {
+		List<Entity> entitiesWithComponents = new ArrayList<>();
+		for (Entity entity : entities.values()) {
+			if (Arrays.stream(componentClasses).allMatch(entity::hasComponent)) {
+				entitiesWithComponents.add(entity);
+			}
+		}
+		return entitiesWithComponents;
 	}
 
 	/**
@@ -246,8 +236,14 @@ public class Entity {
 	 * @param componentClass the component's class
 	 * @return list of components of that class
 	 */
-	public static <T extends Component> Stream<T> getComponents(Class<T> componentClass) {
-		return getAllWithComponent(componentClass).map(entity -> entity.getComponent(componentClass));
+	public static <T extends Component> List<T> getComponents(Class<T> componentClass) {
+		List<T> components = new ArrayList<>();
+		for (Entity entity : entities.values()) {
+			if (entity.hasComponent(componentClass)) {
+				components.add(entity.getComponent(componentClass));
+			}
+		}
+		return components;
 	}
 
 	public static Entity spawn(Vector2f position) {

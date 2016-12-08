@@ -8,7 +8,7 @@ import de.fe1k.game9.utils.Direction;
 import de.nerogar.noise.input.InputHandler;
 import de.nerogar.noise.util.Logger;
 
-import java.util.Optional;
+import java.util.List;
 
 @Depends(components={ComponentMoving.class})
 public class ComponentControllable extends Component {
@@ -45,12 +45,12 @@ public class ComponentControllable extends Component {
 	}
 
 	public void resetPosition() {
-		Optional<ComponentStartMarker> start = Entity.getComponents(ComponentStartMarker.class).findFirst();
-		if (!start.isPresent()) {
+		List<ComponentStartMarker> starts = Entity.getComponents(ComponentStartMarker.class);
+		if (starts.isEmpty()) {
 			Logger.getErrorStream().printf("No start marker found, can't teleport to start!");
 			return;
 		}
-		getOwner().teleport(start.get().getOwner().getPosition());
+		getOwner().teleport(starts.get(0).getOwner().getPosition());
 	}
 
 	@Override
