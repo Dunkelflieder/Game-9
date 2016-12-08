@@ -6,16 +6,16 @@ public interface Event {
 
 	EventManager globalEventManager = new EventManager();
 
-	static <T extends Event> void register(Class<T> eventClass, EventListener<? super T> listener) {
-		globalEventManager.register(eventClass, listener);
+	static <T extends Event> boolean register(Class<T> eventClass, EventListener<? super T> listener) {
+		return globalEventManager.register(eventClass, listener);
 	}
 
-	static <T extends Event> void registerOnce(Class<T> eventClass, EventListener<? super T> listener) {
-		globalEventManager.registerOnce(eventClass, listener);
+	static <T extends Event> boolean registerOnce(Class<T> eventClass, EventListener<? super T> listener) {
+		return globalEventManager.registerOnce(eventClass, listener);
 	}
 
-	static void unregister(EventListener<? extends Event> listener) {
-		globalEventManager.unregister(listener);
+	static <T extends Event> boolean unregister(Class<T> eventClass, EventListener<? super T> listener) {
+		return globalEventManager.unregister(eventClass, listener);
 	}
 
 	static <T extends Event> void trigger(T event) {

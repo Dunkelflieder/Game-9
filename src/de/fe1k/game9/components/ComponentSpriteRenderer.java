@@ -3,7 +3,6 @@ package de.fe1k.game9.components;
 import de.fe1k.game9.DeferredContainerBank;
 import de.fe1k.game9.events.Event;
 import de.fe1k.game9.events.EventBeforeRender;
-import de.fe1k.game9.events.EventListener;
 import de.nerogar.noise.render.RenderProperties3f;
 import de.nerogar.noise.render.deferredRenderer.DeferredContainer;
 import de.nerogar.noise.render.deferredRenderer.DeferredRenderable;
@@ -59,6 +58,6 @@ public class ComponentSpriteRenderer extends ComponentRenderer {
 	@Override
 	public void destroy() {
 		renderer.removeObject(renderable);
-		Event.unregister((EventListener<EventBeforeRender>) this::beforeRender);
+		Event.unregister(EventBeforeRender.class, this::beforeRender);
 	}
 }

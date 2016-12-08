@@ -2,7 +2,6 @@ package de.fe1k.game9.systems;
 
 import de.fe1k.game9.events.Event;
 import de.fe1k.game9.events.EventCallback;
-import de.fe1k.game9.events.EventListener;
 import de.fe1k.game9.events.EventUpdate;
 
 import java.util.ArrayList;
@@ -53,7 +52,7 @@ public class SystemCallbacks implements GameSystem {
 
 	@Override
 	public void stop() {
-		Event.unregister((EventListener<EventCallback>) this::addCallback);
-		Event.unregister((EventListener<EventUpdate>) this::update);
+		Event.unregister(EventCallback.class, this::addCallback);
+		Event.unregister(EventUpdate.class, this::update);
 	}
 }

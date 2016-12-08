@@ -3,7 +3,6 @@ package de.fe1k.game9.components;
 import de.fe1k.game9.entities.Entity;
 import de.fe1k.game9.events.Event;
 import de.fe1k.game9.events.EventCollision;
-import de.fe1k.game9.events.EventListener;
 import de.fe1k.game9.events.EventUpdate;
 import de.fe1k.game9.utils.Direction;
 import de.nerogar.noise.input.InputHandler;
@@ -56,8 +55,8 @@ public class ComponentControllable extends Component {
 
 	@Override
 	public void destroy() {
-		Event.unregister((EventListener<EventUpdate>) this::update);
-		Event.unregister((EventListener<EventCollision>) this::collision);
+		Event.unregister(EventUpdate.class, this::update);
+		Event.unregister(EventCollision.class, this::collision);
 	}
 
 }

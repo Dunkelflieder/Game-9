@@ -6,7 +6,6 @@ import de.fe1k.game9.entities.Entity;
 import de.fe1k.game9.events.Event;
 import de.fe1k.game9.events.EventCollision;
 import de.fe1k.game9.events.EventEntityMoved;
-import de.fe1k.game9.events.EventListener;
 import de.fe1k.game9.utils.Bounding;
 import de.fe1k.game9.utils.Direction;
 import de.nerogar.noise.util.Vector2f;
@@ -118,6 +117,6 @@ public class SystemCollision implements GameSystem {
 
 	@Override
 	public void stop() {
-		Event.unregister((EventListener<EventEntityMoved>) this::entityMoved);
+		Event.unregister(EventEntityMoved.class, this::entityMoved);
 	}
 }

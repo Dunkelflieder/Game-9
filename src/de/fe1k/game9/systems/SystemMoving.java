@@ -4,7 +4,6 @@ import de.fe1k.game9.components.ComponentMoving;
 import de.fe1k.game9.entities.Entity;
 import de.fe1k.game9.events.Event;
 import de.fe1k.game9.events.EventCollision;
-import de.fe1k.game9.events.EventListener;
 import de.fe1k.game9.events.EventUpdate;
 import de.nerogar.noise.util.Vector2f;
 
@@ -46,8 +45,8 @@ public class SystemMoving implements GameSystem {
 
 	@Override
 	public void stop() {
-		Event.unregister((EventListener<EventUpdate>) this::update);
-		Event.unregister((EventListener<EventCollision>) this::collision);
+		Event.unregister(EventUpdate.class, this::update);
+		Event.unregister(EventCollision.class, this::collision);
 	}
 
 }

@@ -1,7 +1,10 @@
 package de.fe1k.game9.systems;
 
 import de.fe1k.game9.entities.Entity;
-import de.fe1k.game9.events.*;
+import de.fe1k.game9.events.Event;
+import de.fe1k.game9.events.EventEntityDestroyed;
+import de.fe1k.game9.events.EventEntityMoved;
+import de.fe1k.game9.events.EventEntitySpawned;
 import de.fe1k.game9.utils.Vector2i;
 import de.nerogar.noise.util.Vector2f;
 
@@ -71,8 +74,8 @@ public class SystemEntityLookup implements GameSystem {
 
 	@Override
 	public void stop() {
-		Event.unregister((EventListener<EventEntityMoved>) this::entityMoved);
-		Event.unregister((EventListener<EventEntitySpawned>) this::entitySpawned);
-		Event.unregister((EventListener<EventEntityDestroyed>) this::entityDestroyed);
+		Event.unregister(EventEntityMoved.class, this::entityMoved);
+		Event.unregister(EventEntitySpawned.class, this::entitySpawned);
+		Event.unregister(EventEntityDestroyed.class, this::entityDestroyed);
 	}
 }
