@@ -4,6 +4,7 @@ import de.fe1k.game9.DeferredContainerBank;
 import de.fe1k.game9.components.ComponentBounding;
 import de.fe1k.game9.components.ComponentRenderer;
 import de.fe1k.game9.components.ComponentSpriteRenderer;
+import de.fe1k.game9.components.ComponentStartMarker;
 import de.fe1k.game9.entities.Entity;
 import de.fe1k.game9.utils.Bounding;
 import de.nerogar.noise.render.Mesh;
@@ -58,6 +59,17 @@ public class MapLoader {
 		for (Map.Entry<Tile, List<Entity>> entry : entitiesPerTile.entrySet()) {
 			Tile tile = entry.getKey();
 			List<Entity> entities = entry.getValue();
+
+			// special cases for special tiles
+
+			if (tile == Tile.START) {
+				for (Entity entity : entities) {
+					entity.addComponent(new ComponentStartMarker());
+				}
+				continue;
+			}
+
+			// rest of the tiles have bounding
 
 			for (Entity entity : entities) {
 				Bounding bounding = new Bounding(0, 0, 1, 1);

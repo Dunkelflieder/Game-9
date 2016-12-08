@@ -4,12 +4,15 @@ import de.fe1k.game9.components.ComponentBounding;
 import de.fe1k.game9.components.ComponentMoving;
 import de.fe1k.game9.entities.Entity;
 import de.fe1k.game9.events.Event;
+import de.fe1k.game9.events.EventCollision;
 import de.fe1k.game9.events.EventEntityMoved;
 import de.fe1k.game9.events.EventListener;
 import de.fe1k.game9.utils.Bounding;
+import de.fe1k.game9.utils.Direction;
 import de.nerogar.noise.util.Vector2f;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class SystemCollision implements GameSystem {
 	private SystemEntityLookup entityLookup;
@@ -38,29 +41,31 @@ public class SystemCollision implements GameSystem {
 		int y = (int) Math.floor(entity.getPosition().getY());
 
 		// get all entities in close proximity (assuming they are max. 1 unit big)
-		List<Entity> possiblyColliding = new ArrayList<>();
-		possiblyColliding.addAll(entityLookup.getAt(x-1, y-1));
-		possiblyColliding.addAll(entityLookup.getAt(x+0, y-1));
-		possiblyColliding.addAll(entityLookup.getAt(x+1, y-1));
-		possiblyColliding.addAll(entityLookup.getAt(x-1, y+0));
-		possiblyColliding.addAll(entityLookup.getAt(x+0, y+0));
-		possiblyColliding.addAll(entityLookup.getAt(x+1, y+0));
-		possiblyColliding.addAll(entityLookup.getAt(x-1, y+1));
-		possiblyColliding.addAll(entityLookup.getAt(x+0, y+1));
-		possiblyColliding.addAll(entityLookup.getAt(x+1, y+1));
+		Set<Entity> possiblyCollidingSet = new HashSet<>();
+		possiblyCollidingSet.addAll(entityLookup.getAt(x-1, y-1));
+		possiblyCollidingSet.addAll(entityLookup.getAt(x+0, y-1));
+		possiblyCollidingSet.addAll(entityLookup.getAt(x+1, y-1));
+		possiblyCollidingSet.addAll(entityLookup.getAt(x-1, y+0));
+		possiblyCollidingSet.addAll(entityLookup.getAt(x+0, y+0));
+		possiblyCollidingSet.addAll(entityLookup.getAt(x+1, y+0));
+		possiblyCollidingSet.addAll(entityLookup.getAt(x-1, y+1));
+		possiblyCollidingSet.addAll(entityLookup.getAt(x+0, y+1));
+		possiblyCollidingSet.addAll(entityLookup.getAt(x+1, y+1));
 
-		possiblyColliding.removeIf(e -> !e.hasComponent(ComponentBounding.class));  // must have bounding
-		possiblyColliding.remove(entity);  // no self collisions please
+		possiblyCollidingSet.removeIf(e -> !e.hasComponent(ComponentBounding.class));  // must have bounding
+		possiblyCollidingSet.remove(entity);  // no self collisions please
 
 		// sort by distance to entity being checked. Fixes movement stuttering when moving along flat surfaces,
 		// because for example when moving on a flat ground, a neighboring bounding might think you collided with
 		// it's side because the bounding you're standing on right now didn't push you upwards yet.
+		List<Entity> possiblyColliding = possiblyCollidingSet.stream().collect(Collectors.toList());
 		possiblyColliding.sort((o1, o2) ->
 				(int) Math.signum(o1.getPosition().subtracted(entity.getPosition()).getSquaredValue()
 						        - o2.getPosition().subtracted(entity.getPosition()).getSquaredValue())
 		);
 
 		Vector2f newPosition = entity.getPosition().clone();
+		List<EventCollision> collisions = new ArrayList<>();
 		for (Entity collidingEntity : possiblyColliding) {
 			ComponentBounding compBounding = collidingEntity.getComponent(ComponentBounding.class);
 			Bounding bounding = boundingComponent.bounding.translated(new Vector2f(newPosition.getX(), newPosition.getY()));
@@ -92,18 +97,23 @@ public class SystemCollision implements GameSystem {
 				horizontal = Math.abs(deltaMoved.getX() / escapeVector.getX())
 						   > Math.abs(deltaMoved.getY() / escapeVector.getY());
 			}
+			Direction collisionDirection;
 			if (horizontal) {
 				escapeVector.setY(0);
-				movingComponent.velocity.setX(0);
+				collisionDirection = escapeVector.getX() < 0 ? Direction.RIGHT : Direction.LEFT;
 			} else {
 				escapeVector.setX(0);
-				movingComponent.velocity.setY(0);
+				collisionDirection = escapeVector.getY() < 0 ? Direction.UP : Direction.DOWN;
 			}
+			collisions.add(new EventCollision(movingComponent, compBounding, collisionDirection));
 			newPosition.add(escapeVector);
 		}
-		// prevent infinite event loops
-		skipEntities.add(entity);
-		entity.teleport(newPosition);
+		if (!entity.getPosition().equals(newPosition)) {
+			// prevent infinite event loops
+			skipEntities.add(entity);
+			entity.teleport(newPosition);
+		}
+		collisions.forEach(Event::trigger);
 	}
 
 	@Override

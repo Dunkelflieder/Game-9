@@ -1,9 +1,6 @@
 package de.fe1k.game9;
 
-import de.fe1k.game9.components.ComponentBounding;
-import de.fe1k.game9.components.ComponentLight;
-import de.fe1k.game9.components.ComponentMoving;
-import de.fe1k.game9.components.ComponentSpriteAnimationRenderer;
+import de.fe1k.game9.components.*;
 import de.fe1k.game9.entities.Entity;
 import de.fe1k.game9.events.Event;
 import de.fe1k.game9.events.EventBeforeRender;
@@ -29,6 +26,7 @@ public class Game {
 	private OrthographicCamera camera;
 	private Timer timer;
 	private long lastFpsUpdate;
+	private Entity player;
 
 	public Game() {
 		Noise.init();
@@ -92,6 +90,8 @@ public class Game {
 		displayFPS();
 		Event.trigger(new EventUpdate(targetDelta));
 		Event.trigger(new EventBeforeRender(targetDelta, timer.getRuntime()));
+		camera.setX(player.getPosition().getX());
+		camera.setY(player.getPosition().getY());
 		renderer.render(camera);
 		window.bind();
 		RenderHelper.blitTexture(renderer.getColorOutput());
@@ -104,11 +104,14 @@ public class Game {
 	}
 
 	private void makePlayerEntity() {
-		Entity entity = Entity.spawn(new Vector2f(10, 10));
-		entity.getScale().set(1.0f);
-		entity.addComponent(new ComponentSpriteAnimationRenderer(renderer, "man", 6, 0.07f));
-		entity.addComponent(new ComponentMoving());
-		entity.addComponent(new ComponentBounding(new Bounding(0, 0, 1, 1)));
-		entity.addComponent(new ComponentLight(renderer, new Color(1.0f, 0.8f, 0.8f, 0.0f), 20, 3));
+		player = Entity.spawn(new Vector2f(10, 10));
+		player.getScale().set(1.0f);
+		player.addComponent(new ComponentSpriteAnimationRenderer(renderer, "man", 6, 0.07f));
+		player.addComponent(new ComponentMoving());
+		player.addComponent(new ComponentBounding(new Bounding(0, 0, 1, 1)));
+		player.addComponent(new ComponentLight(renderer, new Color(1.0f, 0.8f, 0.8f, 0.0f), 20, 3));
+		ComponentControllable control = new ComponentControllable(window.getInputHandler());
+		player.addComponent(control);
+		control.resetPosition();
 	}
 }

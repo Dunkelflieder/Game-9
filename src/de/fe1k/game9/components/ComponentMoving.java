@@ -7,9 +7,13 @@ public class ComponentMoving extends Component {
 	public Vector2f velocity;
 	public Vector2f gravity;
 	public float friction;
+	public float airFriction;
+	public boolean[] touching;
 	public ComponentMoving() {
 		this.velocity = new Vector2f();
 		this.gravity = SystemMoving.GRAVITY;
-		this.friction = 0.1f;
+		this.airFriction = 5;
+		this.friction = 10;
+		touching = new boolean[4];
 	}
 }
