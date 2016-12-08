@@ -1,24 +1,28 @@
 package de.fe1k.game9.systems;
 
+import de.fe1k.game9.Game;
 import de.fe1k.game9.events.Event;
 import de.fe1k.game9.events.EventCallback;
 import de.fe1k.game9.events.EventUpdate;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.PriorityQueue;
+import java.util.Queue;
 
 public class SystemCallbacks implements GameSystem {
-	private class CallbackEntry {
-		float time;
+	private class CallbackEntry implements Comparable<CallbackEntry> {
+		double time;
 		EventCallback.Callback callback;
-		CallbackEntry(float time, EventCallback.Callback callback) {
+		CallbackEntry(double time, EventCallback.Callback callback) {
 			this.time = time;
 			this.callback = callback;
 		}
+		@Override
+		public int compareTo(CallbackEntry o) {
+			return (int) Math.signum(time - o.time);
+		}
 	}
 
-	private List<CallbackEntry> callbacks = new ArrayList<>();
+	private Queue<CallbackEntry> callbacks = new PriorityQueue<>();
 
 	@Override
 	public void start() {
@@ -27,27 +31,17 @@ public class SystemCallbacks implements GameSystem {
 	}
 
 	private void addCallback(EventCallback event) {
-		int pos = 0;
-		// find spot to insert. TODO: binary search
-		while(pos < callbacks.size() && callbacks.get(pos).time < event.time) {
-			pos++;
-		}
-		callbacks.add(pos, new CallbackEntry(event.time, event.callback));
+		double now = Game.getRunTime();
+		callbacks.add(new CallbackEntry(now+event.time, event.callback));
 	}
 
 	private void update(EventUpdate event) {
-		Iterator<CallbackEntry> iter = callbacks.iterator();
-		List<EventCallback.Callback> toCall = new ArrayList<>();
-		while (iter.hasNext()) {
-			CallbackEntry entry = iter.next();
-			entry.time -= event.deltaTime;
-			if (entry.time <= 0) {
-				iter.remove();
-				toCall.add(entry.callback);
-			}
+		double now = Game.getRunTime();
+		CallbackEntry entry;
+		while ((entry = callbacks.peek()) != null && entry.time <= now) {
+			callbacks.poll();
+			entry.callback.call();
 		}
-		// call after iteration to avoid concurrent modifications in the callbacks
-		toCall.forEach(EventCallback.Callback::call);
 	}
 
 	@Override

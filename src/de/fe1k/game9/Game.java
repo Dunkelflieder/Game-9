@@ -24,7 +24,7 @@ public class Game {
 	private GLWindow window;
 	private DeferredRenderer renderer;
 	private OrthographicCamera camera;
-	private Timer timer;
+	private static Timer timer;  // TODO properly distinguish between static and non-static stuff
 	private long lastFpsUpdate;
 	private Entity player;
 
@@ -108,11 +108,15 @@ public class Game {
 		player.getScale().set(1.0f);
 		player.addComponent(new ComponentSpriteAnimationRenderer(renderer, "man", 6, 0.07f));
 		player.addComponent(new ComponentMoving());
-		player.addComponent(new ComponentBounding(new Bounding(0, 0, 1, 1)));
+		player.addComponent(new ComponentBounding(new Bounding(0.2f, 0, 0.8f, 0.95f), ComponentBounding.LAYER_PLAYER, ComponentBounding.LAYER_ALL));
 		player.addComponent(new ComponentLight(renderer, new Color(1.0f, 0.8f, 0.8f, 0.0f), 20, 3));
 		player.addComponent(new ComponentDeathAnimation(renderer));
 		ComponentControllable control = new ComponentControllable(window.getInputHandler());
 		player.addComponent(control);
 		control.resetPosition();
+	}
+
+	public static double getRunTime() {
+		return timer.getRuntime();
 	}
 }
