@@ -29,10 +29,7 @@ public class EventManager {
 	}
 
 	public <T extends Event> boolean unregister(Class<T> eventClass, EventListener<? super T> listener) {
-		if (!listeners.containsKey(eventClass)) {
-			return false;
-		}
-		return listeners.get(eventClass).remove(listener);
+		return listeners.containsKey(eventClass) && listeners.get(eventClass).remove(listener);
 	}
 
 	@SuppressWarnings("unchecked")

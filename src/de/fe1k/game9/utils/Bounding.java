@@ -72,8 +72,8 @@ public class Bounding {
 
 		Bounding bounding = (Bounding) o;
 
-		if (min != null ? !min.equals(bounding.min) : bounding.min != null) return false;
-		return max != null ? max.equals(bounding.max) : bounding.max == null;
+		return (min != null ? min.equals(bounding.min) : bounding.min == null)
+			&& (max != null ? max.equals(bounding.max) : bounding.max == null);
 	}
 
 	@Override

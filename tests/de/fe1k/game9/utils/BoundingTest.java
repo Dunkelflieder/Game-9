@@ -21,7 +21,7 @@ class BoundingTest {
 		);
 		Optional<Vector2f> escape = b1.getEscapeVector(b2);
 		assertTrue(escape.isPresent());
-		assertEquals(new Vector2f(-1), escape.get());
+		escape.ifPresent(vector2f -> assertEquals(new Vector2f(-1), vector2f));
 	}
 
 	@Test
@@ -36,7 +36,7 @@ class BoundingTest {
 		);
 		Optional<Vector2f> escape = b1.getEscapeVector(b2);
 		assertTrue(escape.isPresent());
-		assertEquals(new Vector2f(1, 0.1f), escape.get());
+		escape.ifPresent(vector2f -> assertEquals(new Vector2f(1, 0.1f), vector2f));
 	}
 
 	@Test

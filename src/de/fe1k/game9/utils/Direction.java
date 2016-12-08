@@ -43,7 +43,7 @@ public enum Direction {
 	 * Returns a Vector2i with one component offset by 1, basically "moving" the input vector into
 	 * the direction this enum represents.
 	 * @param start the Vector2i to offset
-	 * @return a Vector2i with one of the componentd offset by 1, depending on this durection enum.
+	 * @return a Vector2i with one of the component offset by 1, depending on this direction enum.
 	 */
 	public Vector2i offset(Vector2i start) {
 		int x = start.getX();

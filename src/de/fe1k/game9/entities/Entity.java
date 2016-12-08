@@ -38,7 +38,7 @@ public class Entity {
 	}
 
 	/**
-	 * Looks up if the entiry has a specific component
+	 * Looks up if the entity has a specific component
 	 * @param component the component to check for.
 	 * @return true if the entity has that component, false otherwise.
 	 *     Note: uses the component's equals() and hashCode().
@@ -220,7 +220,7 @@ public class Entity {
 	 * @param componentClass the component class to check for
 	 * @return stream of entities that have the component
 	 */
-	public static <T extends Component> Stream<Entity> getAllWithComponent(Class<T> componentClass) {
+	private static <T extends Component> Stream<Entity> getAllWithComponent(Class<T> componentClass) {
 		return entities.values().stream().filter(
 				entity -> entity.hasComponent(componentClass)
 		);
@@ -237,6 +237,11 @@ public class Entity {
 		);
 	}
 
+	/**
+	 * Returns all components of the given class
+	 * @param componentClass the component's class
+	 * @return list of components of that class
+	 */
 	public static <T extends Component> Stream<T> getComponents(Class<T> componentClass) {
 		return getAllWithComponent(componentClass).map(entity -> entity.getComponent(componentClass));
 	}
