@@ -14,11 +14,13 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class SystemCollision implements GameSystem {
+
 	private SystemEntityLookup entityLookup;
-	private Set<Entity> skipEntities = new HashSet<>();
+	private Set<Entity>        skipEntities;
 
 	public SystemCollision(SystemEntityLookup entityLookup) {
 		this.entityLookup = entityLookup;
+		skipEntities = new HashSet<>();
 	}
 
 	@Override
@@ -29,6 +31,7 @@ public class SystemCollision implements GameSystem {
 	private void entityMoved(EventEntityMoved event) {
 		Entity entity = event.entity;
 		if (skipEntities.remove(entity)) {
+			System.out.println("Skipping entity " + entity);
 			return;
 		}
 		ComponentBounding boundingComponent = entity.getComponent(ComponentBounding.class);
@@ -41,15 +44,15 @@ public class SystemCollision implements GameSystem {
 
 		// get all entities in close proximity (assuming they are max. 1 unit big)
 		Set<Entity> possiblyCollidingSet = new HashSet<>();
-		possiblyCollidingSet.addAll(entityLookup.getAt(x-1, y-1));
-		possiblyCollidingSet.addAll(entityLookup.getAt(x+0, y-1));
-		possiblyCollidingSet.addAll(entityLookup.getAt(x+1, y-1));
-		possiblyCollidingSet.addAll(entityLookup.getAt(x-1, y+0));
-		possiblyCollidingSet.addAll(entityLookup.getAt(x+0, y+0));
-		possiblyCollidingSet.addAll(entityLookup.getAt(x+1, y+0));
-		possiblyCollidingSet.addAll(entityLookup.getAt(x-1, y+1));
-		possiblyCollidingSet.addAll(entityLookup.getAt(x+0, y+1));
-		possiblyCollidingSet.addAll(entityLookup.getAt(x+1, y+1));
+		possiblyCollidingSet.addAll(entityLookup.getAt(x - 1, y - 1));
+		possiblyCollidingSet.addAll(entityLookup.getAt(x + 0, y - 1));
+		possiblyCollidingSet.addAll(entityLookup.getAt(x + 1, y - 1));
+		possiblyCollidingSet.addAll(entityLookup.getAt(x - 1, y + 0));
+		possiblyCollidingSet.addAll(entityLookup.getAt(x + 0, y + 0));
+		possiblyCollidingSet.addAll(entityLookup.getAt(x + 1, y + 0));
+		possiblyCollidingSet.addAll(entityLookup.getAt(x - 1, y + 1));
+		possiblyCollidingSet.addAll(entityLookup.getAt(x + 0, y + 1));
+		possiblyCollidingSet.addAll(entityLookup.getAt(x + 1, y + 1));
 
 		possiblyCollidingSet.removeIf(e -> !e.hasComponent(ComponentBounding.class));  // must have bounding
 		possiblyCollidingSet.remove(entity);  // no self collisions please
@@ -58,15 +61,16 @@ public class SystemCollision implements GameSystem {
 		// because for example when moving on a flat ground, a neighboring bounding might think you collided with
 		// it's side because the bounding you're standing on right now didn't push you upwards yet.
 		List<Entity> possiblyColliding = possiblyCollidingSet.stream().collect(Collectors.toList());
-		possiblyColliding.sort((o1, o2) ->
-				(int) Math.signum(o1.getPosition().subtracted(entity.getPosition()).getSquaredValue()
-						        - o2.getPosition().subtracted(entity.getPosition()).getSquaredValue())
-		);
+		possiblyColliding.sort((o1, o2) -> (int) Math.signum(o1.getPosition().subtracted(entity.getPosition()).getSquaredValue()
+				                                                     - o2.getPosition().subtracted(entity.getPosition()).getSquaredValue()));
 
 		Vector2f newPosition = entity.getPosition().clone();
 		List<EventCollision> collisions = new ArrayList<>();
 		for (Entity collidingEntity : possiblyColliding) {
 			ComponentBounding compBounding = collidingEntity.getComponent(ComponentBounding.class);
+			if ((boundingComponent.layerCollides & compBounding.layerSelf) == 0 || (boundingComponent.layerSelf & compBounding.layerCollides) == 0) {
+				continue;  // not colliding
+			}
 			Bounding bounding = boundingComponent.bounding.translated(new Vector2f(newPosition.getX(), newPosition.getY()));
 			Bounding otherBounding = compBounding.bounding.translated(new Vector2f(
 					collidingEntity.getPosition().getX(),
@@ -94,7 +98,7 @@ public class SystemCollision implements GameSystem {
 				horizontal = true;  // collision "from inside", can't be vertical
 			} else {
 				horizontal = Math.abs(deltaMoved.getX() / escapeVector.getX())
-						   > Math.abs(deltaMoved.getY() / escapeVector.getY());
+						> Math.abs(deltaMoved.getY() / escapeVector.getY());
 			}
 			Direction collisionDirection;
 			if (horizontal) {
@@ -111,8 +115,8 @@ public class SystemCollision implements GameSystem {
 			// prevent infinite event loops
 			skipEntities.add(entity);
 			entity.teleport(newPosition);
+			collisions.forEach(Event::trigger);
 		}
-		collisions.forEach(Event::trigger);
 	}
 
 	@Override

@@ -11,14 +11,14 @@ public enum Tile {
 	PILLAR(0xffbb00, "pillar", true),
 	BARRIER(0xffff00, "barrier", true);
 
-	public final int color;
-	public final String texname;
-	public final boolean static_;
+	public final int     color;
+	public final String  texname;
+	public final boolean stationary;
 
-	Tile(int color, String texname, boolean static_) {
+	Tile(int color, String texname, boolean stationary) {
 		this.color = color;
 		this.texname = texname;
-		this.static_ = static_;
+		this.stationary = stationary;
 	}
 	
 	public static Tile fromColor(int color) {
@@ -31,6 +31,6 @@ public enum Tile {
 	}
 
 	public static Stream<Tile> getStaticTiles() {
-		return Arrays.stream(values()).filter(tile -> tile.static_);
+		return Arrays.stream(values()).filter(tile -> tile.stationary);
 	}
 }

@@ -73,12 +73,12 @@ public class MapLoader {
 
 			for (Entity entity : entities) {
 				Bounding bounding = new Bounding(0, 0, 1, 1);
-				entity.addComponent(new ComponentBounding(bounding));
+				entity.addComponent(new ComponentBounding(bounding, ComponentBounding.LAYER_MAP, ComponentBounding.LAYER_ALL));
 			}
 
 			////// Build how to render //////
 
-			if (!tile.static_) {
+			if (!tile.stationary) {
 				for (Entity entity : entities) {
 					entity.addComponent(new ComponentSpriteRenderer(renderer, tile.texname));
 				}

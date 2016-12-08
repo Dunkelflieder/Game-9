@@ -3,6 +3,7 @@ package de.fe1k.game9.components;
 import de.fe1k.game9.entities.Entity;
 import de.fe1k.game9.events.Event;
 import de.fe1k.game9.events.EventEntityDestroyed;
+import de.fe1k.game9.utils.Bounding;
 import de.nerogar.noise.render.deferredRenderer.DeferredRenderer;
 import de.nerogar.noise.util.Color;
 
@@ -47,7 +48,7 @@ public class ComponentDeathAnimation extends ComponentRenderer {
 			particle.addComponent(componentMoving);
 
 			// crashes the game
-			//particle.addComponent(new ComponentBounding(new Bounding(0, 0, 0.1f, 0.1f)));
+			particle.addComponent(new ComponentBounding(new Bounding(0, 0, 0.1f, 0.1f), ComponentBounding.LAYER_PARTICLES, ComponentBounding.LAYER_MAP));
 
 			particle.addComponent(new ComponentSpriteRenderer(renderer, "blood", 1));
 
