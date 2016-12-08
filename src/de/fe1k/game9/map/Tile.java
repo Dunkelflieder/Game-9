@@ -4,8 +4,8 @@ import java.util.Arrays;
 import java.util.stream.Stream;
 
 public enum Tile {
-	START(0x00ff00, "man", false),
-	STOP(0xff0000, "man", false),
+	START(0xff0000, "man", false),
+	STOP(0x00ff00, "man", false),
 	GROUND(0x000000, "ground", true),
 	FLOOR(0x111111, "floor", true),
 	PILLAR(0xffbb00, "pillar", true),
