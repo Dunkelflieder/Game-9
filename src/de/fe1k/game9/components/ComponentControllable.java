@@ -39,6 +39,9 @@ public class ComponentControllable extends Component {
 	}
 
 	private void collision(EventCollision event) {
+		if (!event.movingComponent.getOwner().equals(getOwner())) {
+			return;
+		}
 		if (event.collisionDirection.isHorizontal()) {
 			// death
 			Event.trigger(new EventEntityDestroyed(getOwner()));
