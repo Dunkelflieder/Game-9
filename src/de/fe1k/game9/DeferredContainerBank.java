@@ -1,8 +1,6 @@
 package de.fe1k.game9;
 
-import de.nerogar.noise.render.Mesh;
-import de.nerogar.noise.render.Texture2D;
-import de.nerogar.noise.render.Texture2DLoader;
+import de.nerogar.noise.render.*;
 import de.nerogar.noise.render.deferredRenderer.DeferredContainer;
 import de.nerogar.noise.util.Logger;
 
@@ -13,6 +11,8 @@ import java.util.Map;
 public class DeferredContainerBank {
 
 	private static Map<String, DeferredContainer> containers = new HashMap<>();
+
+	private static final Shader transparentShader;
 
 	private static String getBasePath(String name) {
 		return "res/sprites/" + name + "/";
@@ -47,26 +47,26 @@ public class DeferredContainerBank {
 		String colorPath = getBasePath(name) + "color.png";
 		Texture2D colorTexture;
 		if (new File(colorPath).exists()) {
-			colorTexture = Texture2DLoader.loadTexture(colorPath, Texture2D.InterpolationType.NEAREST_MIPMAP);
+			colorTexture = Texture2DLoader.loadTexture(colorPath, Texture2D.InterpolationType.NEAREST);
 		} else {
-			colorTexture = Texture2DLoader.loadTexture("<white.png>", Texture2D.InterpolationType.NEAREST_MIPMAP);
+			colorTexture = Texture2DLoader.loadTexture("<white.png>", Texture2D.InterpolationType.NEAREST);
 			Logger.getErrorStream().printf("Color map not found: %s", colorPath);
 		}
 		String normalPath = getBasePath(name) + "normal.png";
 		Texture2D normalTexture;
 		if (new File(normalPath).exists()) {
-			normalTexture = Texture2DLoader.loadTexture(normalPath, Texture2D.InterpolationType.NEAREST_MIPMAP);
+			normalTexture = Texture2DLoader.loadTexture(normalPath, Texture2D.InterpolationType.NEAREST);
 		} else {
-			normalTexture = Texture2DLoader.loadTexture("<normal.png>", Texture2D.InterpolationType.NEAREST_MIPMAP);
+			normalTexture = Texture2DLoader.loadTexture("<normal.png>", Texture2D.InterpolationType.NEAREST);
 		}
 		String lightPath = getBasePath(name) + "red.png";
 		Texture2D lightTexture;
 		if (new File(lightPath).exists()) {
-			lightTexture = Texture2DLoader.loadTexture(lightPath, Texture2D.InterpolationType.NEAREST_MIPMAP);
+			lightTexture = Texture2DLoader.loadTexture(lightPath, Texture2D.InterpolationType.NEAREST);
 		} else {
-			lightTexture = Texture2DLoader.loadTexture("<red.png>", Texture2D.InterpolationType.NEAREST_MIPMAP);
+			lightTexture = Texture2DLoader.loadTexture("<red.png>", Texture2D.InterpolationType.NEAREST);
 		}
-		return new DeferredContainer(mesh, null, colorTexture, normalTexture, lightTexture);
+		return new DeferredContainer(mesh, transparentShader, colorTexture, normalTexture, lightTexture);
 	}
 
 	public static DeferredContainer getContainer(String name, Mesh mesh) {
@@ -74,6 +74,10 @@ public class DeferredContainerBank {
 			containers.put(name, createContainer(name, mesh));
 		}
 		return containers.get(name);
+	}
+
+	static {
+		transparentShader = DeferredContainer.createSurfaceShader("res/shaders/spriteTransparent.vert", "res/shaders/spriteTransparent.frag");
 	}
 
 }
