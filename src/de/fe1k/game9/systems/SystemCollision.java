@@ -31,7 +31,6 @@ public class SystemCollision implements GameSystem {
 	private void entityMoved(EventEntityMoved event) {
 		Entity entity = event.entity;
 		if (skipEntities.remove(entity)) {
-			System.out.println("Skipping entity " + entity);
 			return;
 		}
 		ComponentBounding boundingComponent = entity.getComponent(ComponentBounding.class);
