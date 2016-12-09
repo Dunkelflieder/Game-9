@@ -1,29 +1,29 @@
 package de.fe1k.game9;
 
-import de.fe1k.game9.components.*;
+import de.fe1k.game9.components.Component;
+import de.fe1k.game9.components.ComponentPlayer;
 import de.fe1k.game9.entities.Entity;
 import de.fe1k.game9.events.Event;
 import de.fe1k.game9.events.EventBeforeRender;
 import de.fe1k.game9.events.EventUpdate;
 import de.fe1k.game9.map.MapLoader;
 import de.fe1k.game9.systems.*;
-import de.fe1k.game9.utils.Bounding;
 import de.nerogar.noise.Noise;
 import de.nerogar.noise.render.GLWindow;
 import de.nerogar.noise.render.OrthographicCamera;
 import de.nerogar.noise.render.RenderHelper;
 import de.nerogar.noise.render.deferredRenderer.DeferredRenderer;
-import de.nerogar.noise.util.Color;
 import de.nerogar.noise.util.Timer;
-import de.nerogar.noise.util.Vector2f;
+
+import java.util.List;
 
 public class Game {
-	private GLWindow window;
-	private DeferredRenderer renderer;
-	private OrthographicCamera camera;
-	private static Timer timer;  // TODO properly distinguish between static and non-static stuff
-	private long lastFpsUpdate;
-	private Entity player;
+
+	public static  GLWindow           window;
+	public static  DeferredRenderer   renderer;
+	private        OrthographicCamera camera;
+	private static Timer              timer;  // TODO properly distinguish between static and non-static stuff
+	private        long               lastFpsUpdate;
 
 	public Game() {
 		Noise.init();
@@ -31,8 +31,7 @@ public class Game {
 		setUpCamera();
 		setUpRenderer();
 		setUpSystems();
-		MapLoader.loadMap(renderer, "res/map/map0.png");
-		makePlayerEntity();
+		MapLoader.loadMap(renderer, "res/map/map1");
 		timer = new Timer();
 	}
 
@@ -62,12 +61,13 @@ public class Game {
 		window = new GLWindow("Game-9", 1280, 720, true, 0, null, null);
 		window.setSizeChangeListener((int width, int height) -> {
 			renderer.setFrameBufferResolution(width, height);
-			camera.setAspect((float) width/height);
+			camera.setAspect((float) width / height);
+			camera.setHeight((float) height / 32);
 		});
 	}
 
 	private void setUpCamera() {
-		camera = new OrthographicCamera(20, (float) window.getWidth()/window.getHeight(), 100, -100);
+		camera = new OrthographicCamera((float) window.getHeight() / 32, (float) window.getWidth() / window.getHeight(), 100, -100);
 		camera.setXYZ(10, 10, 10);
 	}
 
@@ -84,13 +84,20 @@ public class Game {
 
 	private void mainloop() {
 		GLWindow.updateAll();
-		float targetDelta = 1/60f;
+		float targetDelta = 1 / 60f;
 		timer.update(targetDelta);
 		displayFPS();
 		Event.trigger(new EventUpdate(targetDelta));
 		Event.trigger(new EventBeforeRender(targetDelta, timer.getRuntime()));
-		camera.setX(player.getPosition().getX());
-		camera.setY(player.getPosition().getY());
+
+		List<ComponentPlayer> playerList = Entity.getComponents(ComponentPlayer.class);
+		if (!playerList.isEmpty()) {
+			Entity player = playerList.get(0).getOwner();
+
+			camera.setX(player.getPosition().getX());
+			camera.setY(player.getPosition().getY());
+		}
+
 		renderer.render(camera);
 		window.bind();
 		RenderHelper.blitTexture(renderer.getColorOutput());
@@ -100,19 +107,6 @@ public class Game {
 		while (!window.shouldClose()) {
 			mainloop();
 		}
-	}
-
-	private void makePlayerEntity() {
-		player = Entity.spawn(new Vector2f(10, 10));
-		player.getScale().set(1.0f);
-		player.addComponent(new ComponentSpriteAnimationRenderer(renderer, "man", 6, 0.07f));
-		player.addComponent(new ComponentMoving());
-		player.addComponent(new ComponentBounding(new Bounding(0.2f, 0, 0.8f, 0.95f), ComponentBounding.LAYER_PLAYER, ComponentBounding.LAYER_ALL));
-		player.addComponent(new ComponentLight(renderer, new Color(1.0f, 0.8f, 0.8f, 0.0f), 20, 3));
-		player.addComponent(new ComponentDeathAnimation());
-		ComponentControllable control = new ComponentControllable(window.getInputHandler());
-		player.addComponent(control);
-		control.resetPosition();
 	}
 
 	public static double getRunTime() {
