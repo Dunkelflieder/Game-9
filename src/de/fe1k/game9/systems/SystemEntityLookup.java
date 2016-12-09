@@ -21,15 +21,14 @@ public class SystemEntityLookup implements GameSystem {
 		Event.register(EventEntityMoved.class, this::entityMoved);
 		Event.register(EventEntitySpawned.class, this::entitySpawned);
 		Event.register(EventEntityDestroyed.class, this::entityDestroyed);
-		Entity.getAll().forEach(this::addEntity);
+		Entity.getAll().forEach(entity -> addEntity(entity, vector2fTo2i(entity.getPosition())));
 	}
 
-	private void addEntity(Entity entity) {
-		Vector2i pos = vector2fTo2i(entity.getPosition());
-		if (!entityLookup.containsKey(pos)) {
-			entityLookup.put(pos, new ArrayList<>());
+	private void addEntity(Entity entity, Vector2i position) {
+		if (!entityLookup.containsKey(position)) {
+			entityLookup.put(position, new ArrayList<>());
 		}
-		entityLookup.get(pos).add(entity);
+		entityLookup.get(position).add(entity);
 	}
 
 	private void removeEntity(Entity entity) {
@@ -47,13 +46,12 @@ public class SystemEntityLookup implements GameSystem {
 	}
 
 	private void entityMoved(EventEntityMoved event) {
-		Vector2i oldPos = vector2fTo2i(event.from);
-		removeEntity(event.entity, oldPos);
-		addEntity(event.entity);
+		removeEntity(event.entity, vector2fTo2i(event.from));
+		addEntity(event.entity, vector2fTo2i(event.to));
 	}
 
 	private void entitySpawned(EventEntitySpawned event) {
-		addEntity(event.entity);
+		addEntity(event.entity, vector2fTo2i(event.entity.getPosition()));
 	}
 
 	private void entityDestroyed(EventEntityDestroyed event) {
