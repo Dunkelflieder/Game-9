@@ -14,7 +14,7 @@ public class EntityBuilderPlayer implements Tile.EntityBuilder {
 		entity.addComponent(new ComponentPlayer());
 
 		entity.getScale().set(1.0f);
-		entity.addComponent(new ComponentSpriteAnimationRenderer(Game.renderer, "man", 6, 0.07f));
+		entity.addComponent(new ComponentSpriteRenderer(Game.renderer, "man"));
 		entity.addComponent(new ComponentMoving());
 		entity.addComponent(new ComponentBounding(new Bounding(0.2f, 0, 0.8f, 0.95f), ComponentBounding.LAYER_PLAYER, ComponentBounding.LAYER_ALL));
 		entity.addComponent(new ComponentLight(Game.renderer, new Color(1.0f, 0.8f, 0.8f, 0.0f), 20, 3));
@@ -24,4 +24,5 @@ public class EntityBuilderPlayer implements Tile.EntityBuilder {
 		control.resetPosition();
 
 	}
+
 }
