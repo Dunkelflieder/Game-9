@@ -6,10 +6,7 @@ import de.fe1k.game9.events.Event;
 import de.fe1k.game9.events.EventBeforeRender;
 import de.fe1k.game9.events.EventUpdate;
 import de.fe1k.game9.map.MapLoader;
-import de.fe1k.game9.systems.SystemCallbacks;
-import de.fe1k.game9.systems.SystemCollision;
-import de.fe1k.game9.systems.SystemEntityLookup;
-import de.fe1k.game9.systems.SystemMoving;
+import de.fe1k.game9.systems.*;
 import de.fe1k.game9.utils.Bounding;
 import de.nerogar.noise.Noise;
 import de.nerogar.noise.render.GLWindow;
@@ -44,11 +41,13 @@ public class Game {
 		SystemEntityLookup systemEntityLookup = new SystemEntityLookup();
 		SystemCollision systemCollision = new SystemCollision(systemEntityLookup);
 		SystemCallbacks systemCallbacks = new SystemCallbacks();
+		SystemDeathAnimation systemDeathAnimation = new SystemDeathAnimation(renderer);
 
 		systemMoving.start();
 		systemEntityLookup.start();
 		systemCollision.start();
 		systemCallbacks.start();
+		systemDeathAnimation.start();
 	}
 
 	private void setUpRenderer() {
@@ -110,7 +109,7 @@ public class Game {
 		player.addComponent(new ComponentMoving());
 		player.addComponent(new ComponentBounding(new Bounding(0.2f, 0, 0.8f, 0.95f), ComponentBounding.LAYER_PLAYER, ComponentBounding.LAYER_ALL));
 		player.addComponent(new ComponentLight(renderer, new Color(1.0f, 0.8f, 0.8f, 0.0f), 20, 3));
-		player.addComponent(new ComponentDeathAnimation(renderer));
+		player.addComponent(new ComponentDeathAnimation());
 		ComponentControllable control = new ComponentControllable(window.getInputHandler());
 		player.addComponent(control);
 		control.resetPosition();
