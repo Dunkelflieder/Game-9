@@ -16,7 +16,6 @@ public class ComponentDespawn extends ComponentRenderer {
 	public ComponentDespawn(float delay) {
 		this.delay = delay;
 
-		//Event.register(EventUpdate.class, this::despawn);
 		Event.trigger(new EventCallback(delay, this::despawn));
 	}
 
