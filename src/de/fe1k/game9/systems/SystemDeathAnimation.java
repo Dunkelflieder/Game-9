@@ -41,7 +41,6 @@ public class SystemDeathAnimation implements GameSystem {
 			componentMoving.velocity.setY((float) (rand.nextGaussian() * component.velocity + component.velocity));
 			particle.addComponent(componentMoving);
 
-			// crashes the game
 			particle.addComponent(new ComponentBounding(new Bounding(0, 0, 0.1f, 0.1f), ComponentBounding.LAYER_PARTICLES, ComponentBounding.LAYER_MAP));
 
 			particle.addComponent(new ComponentSpriteRenderer(renderer, component.sprite, 1));
