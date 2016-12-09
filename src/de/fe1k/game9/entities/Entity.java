@@ -255,11 +255,14 @@ public class Entity {
 
 	public static void despawn(long entityId) {
 		Entity removedEntity = entities.remove(entityId);
-
 		Event.trigger(new EventEntityDestroyed(removedEntity));
-
 		removedEntity.destroy();
+	}
 
+	public static void despawnAll() {
+		while (!entities.isEmpty()) {
+			despawn(entities.values().iterator().next().getId());
+		}
 	}
 
 	private static long getUniqueId() {
