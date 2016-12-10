@@ -6,7 +6,6 @@ import de.fe1k.game9.events.EventEntityDestroyed;
 import de.fe1k.game9.events.EventEntityMoved;
 import de.fe1k.game9.events.EventEntitySpawned;
 import de.fe1k.game9.exceptions.ComponentAlreadyExistsException;
-import de.fe1k.game9.exceptions.InvalidComponentException;
 import de.fe1k.game9.exceptions.MissingComponentDependenciesException;
 import de.nerogar.noise.util.Vector2f;
 
@@ -14,120 +13,65 @@ import java.util.*;
 import java.util.stream.Stream;
 
 public class Entity {
+
 	private final long id;
 
 	private Vector2f position;
-	private float rotation;
+	private float    rotation;
 	private Vector2f scale;
-	private HashMap<Class<? extends Component>, Component> components;
+
 	private Entity(long id, Vector2f position) {
 		this.id = id;
 		this.position = position;
 		this.rotation = 0;
 		this.scale = new Vector2f(1);
-		components = new HashMap<>();
 	}
 
 	private void throwOnMissingDependencies() {
-		if (!components.values().stream().allMatch(Component::dependenciesSatisfied)) {
+		if (!getComponents(this).stream().allMatch(Component::dependenciesSatisfied)) {
 			throw new MissingComponentDependenciesException();
 		}
 	}
 
 	/**
-	 * Looks up if the entity has a specific component
-	 * @param component the component to check for.
-	 * @return true if the entity has that component, false otherwise.
-	 *     Note: uses the component's equals() and hashCode().
-	 */
-	public boolean hasComponent(Component component) {
-		return components.containsValue(component);
-	}
-
-	/**
 	 * Looks up if the entity has a component by class.
-	 * @param clazz the component's class
+	 *
+	 * @param componentClass the component's class
 	 * @return true if the entity has a component of that class, false otherwise
 	 */
-	public <T extends Component> boolean hasComponent(Class<T> clazz) {
-		return components.containsKey(clazz);
-	}
-
-	/**
-	 * Adds a component to the entity by the component's class.
-	 * @param componentClass class of the component to add.
-	 * @throws ComponentAlreadyExistsException if this entity already has a component of that class.
-	 * @throws InvalidComponentException if the component is invalid (e.g. can't be constructed)
-	 */
-	public <T extends Component> void addComponent(Class<T> componentClass) {
-		if (hasComponent(componentClass)) {
-			throw new ComponentAlreadyExistsException();
-		}
-		try {
-			Component component = componentClass.newInstance();
-			component.setOwner(this);
-			components.put(componentClass, component);
-			throwOnMissingDependencies();
-		} catch (InstantiationException | IllegalAccessException e) {
-			e.printStackTrace();
-			throw new InvalidComponentException();
-		}
+	public <T extends Component> boolean hasComponent(Class<T> componentClass) {
+		return Entity.hasComponent(this, componentClass);
 	}
 
 	/**
 	 * Adds a component to the entity. Removes it from the previous owner first, if it had one.
+	 *
 	 * @param component component to add
 	 * @throws ComponentAlreadyExistsException if this entity already has a component of that class.
 	 */
 	public void addComponent(Component component) {
-		if (hasComponent(component.getClass())) {
-			throw new ComponentAlreadyExistsException();
-		}
-		Entity previousOwner = component.getOwner();
-		if (previousOwner != null) {
-			previousOwner.removeComponent(component);
-		}
-		component.setOwner(this);
-		components.put(component.getClass(), component);
-		throwOnMissingDependencies();
+		Entity.addComponent(this, component);
 	}
 
 	/**
 	 * Removes a component from the entity by component class.
+	 *
 	 * @param componentClass class of the components to remove.
 	 * @return the component removed, or null if no component got removed.
 	 */
 	public <T extends Component> Component removeComponent(Class<T> componentClass) {
-		Component removed = components.remove(componentClass);
-		if (removed != null) {
-			removed.setOwner(null);
-		}
-		throwOnMissingDependencies();
-		return removed;
-	}
-
-	/**
-	 * Removes a component from the entity.
-	 * @param component the component to remove
-	 * @return true if the component was removed, false otherwise.
-	 */
-	public boolean removeComponent(Component component) {
-		boolean removed = components.remove(component.getClass(), component);
-		if (removed) {
-			component.setOwner(null);
-		}
-		throwOnMissingDependencies();
-		return removed;
+		return Entity.removeComponent(this, componentClass);
 	}
 
 	/**
 	 * Looks up a component by class.
+	 *
 	 * @param clazz the component's class
 	 * @return the component object for that class, or null if the entity doesn't have that component.
 	 */
 	@SuppressWarnings("unchecked")
 	public <T extends Component> T getComponent(Class<T> clazz) {
-		return (T) components.get(clazz);
+		return Entity.getComponent(this, clazz);
 	}
 
 	public long getId() {
@@ -156,6 +100,7 @@ public class Entity {
 	 * Getter for the position of this entity.
 	 * DO NOT directly modify the vector returned by this, instead
 	 * use the {@link #teleport(Vector2f)} or {@link #move(Vector2f)} method instead.
+	 *
 	 * @return position of this entity
 	 */
 	public Vector2f getPosition() {
@@ -174,9 +119,11 @@ public class Entity {
 		return scale;
 	}
 
-	public void destroy() {
-		components.values().forEach(Component::destroy);
-		components.clear();
+	private void destroy() {
+		for (Component component : Entity.getComponents(this)) {
+			Entity.removeComponent(this, component.getClass());
+			component.destroy();
+		}
 	}
 
 	@Override
@@ -205,8 +152,17 @@ public class Entity {
 
 	////////////////// STATIC STUFF //////////////////
 
-	private static Map<Long, Entity> entities = new HashMap<>();
-	private static Random uniqueIdRandom = new Random();
+	private static class ComponentMap extends HashMap<Class<? extends Component>, Map<Entity, Component>> {}
+
+	private static ComponentMap      componentMap;
+	private static Map<Long, Entity> entities;
+	private static Random            uniqueIdRandom;
+
+	static {
+		componentMap = new ComponentMap();
+		entities = new HashMap<>();
+		uniqueIdRandom = new Random();
+	}
 
 	public static Entity getById(long id) {
 		return entities.get(id);
@@ -218,6 +174,7 @@ public class Entity {
 
 	/**
 	 * Returns all entities that have all the given components specified by classes.
+	 *
 	 * @param componentClasses list of component classes to check for
 	 * @return stream of entities that have all the components
 	 */
@@ -233,6 +190,7 @@ public class Entity {
 
 	/**
 	 * Returns all components of the given class
+	 *
 	 * @param componentClass the component's class
 	 * @return list of components of that class
 	 */
@@ -257,6 +215,58 @@ public class Entity {
 		Entity removedEntity = entities.remove(entityId);
 		Event.trigger(new EventEntityDestroyed(removedEntity));
 		removedEntity.destroy();
+	}
+
+	private static List<Component> getComponents(Entity entity) {
+		List<Component> components = new ArrayList<>();
+		for (Map<Entity, Component> entityComponentMap : componentMap.values()) {
+			Component component = entityComponentMap.get(entity);
+			if (component != null) {
+				components.add(component);
+			}
+		}
+		return components;
+	}
+
+	private static void addComponent(Entity entity, Component component) {
+		Class<? extends Component> componentClass = component.getClass();
+		Map<Entity, Component> components = componentMap.computeIfAbsent(componentClass, k -> new HashMap<>());
+		if (components.containsKey(entity)) {
+			throw new ComponentAlreadyExistsException();
+		}
+		components.put(entity, component);
+		Entity previousOwner = component.getOwner();
+		if (previousOwner != null) {
+			previousOwner.removeComponent(component.getClass());
+		}
+		component.setOwner(entity);
+		entity.throwOnMissingDependencies();
+	}
+
+	private static <T extends Component> T removeComponent(Entity entity, Class<T> componentClass) {
+		@SuppressWarnings("unchecked") Map<Entity, T> components = (Map<Entity, T>) componentMap.get(componentClass);
+		if (components == null) {
+			return null;
+		}
+		T removedComponent = components.remove(entity);
+		entity.throwOnMissingDependencies();
+		if (removedComponent != null) {
+			//removedComponent.setOwner(null);
+		}
+		return removedComponent;
+	}
+
+	private static boolean hasComponent(Entity entity, Class<? extends Component> componentClass) {
+		Map<Entity, Component> components = componentMap.get(componentClass);
+		return components != null && components.containsKey(entity);
+	}
+
+	private static <T extends Component> T getComponent(Entity entity, Class<T> componentClass) {
+		@SuppressWarnings("unchecked") Map<Entity, T> components = (Map<Entity, T>) componentMap.get(componentClass);
+		if (components == null) {
+			return null;
+		}
+		return components.get(entity);
 	}
 
 	public static void despawnAll() {
