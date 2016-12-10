@@ -208,7 +208,7 @@ public class Entity {
 	private static Map<Long, Entity> entities = new HashMap<>();
 	private static Random uniqueIdRandom = new Random();
 
-	public Entity getById(long id) {
+	public static Entity getById(long id) {
 		return entities.get(id);
 	}
 
