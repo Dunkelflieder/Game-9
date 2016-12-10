@@ -1,6 +1,5 @@
 package de.fe1k.game9;
 
-import de.fe1k.game9.components.Component;
 import de.fe1k.game9.components.ComponentPlayer;
 import de.fe1k.game9.entities.Entity;
 import de.fe1k.game9.events.Event;
@@ -15,6 +14,7 @@ import de.nerogar.noise.render.RenderHelper;
 import de.nerogar.noise.render.deferredRenderer.DeferredRenderer;
 import de.nerogar.noise.util.Timer;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Game {
@@ -24,31 +24,29 @@ public class Game {
 	private        OrthographicCamera camera;
 	private static Timer              timer;  // TODO properly distinguish between static and non-static stuff
 	private        long               lastFpsUpdate;
+	private        List<GameSystem>   systems;
 
 	public Game() {
+		timer = new Timer();
+		systems = new ArrayList<>();
 		Noise.init();
 		setUpWindow();
 		setUpCamera();
 		setUpRenderer();
 		setUpSystems();
 		MapLoader.loadMap(renderer, "res/map/map1");
-		timer = new Timer();
 	}
 
 	private void setUpSystems() {
 		SystemEntityLookup systemEntityLookup = new SystemEntityLookup();
-		SystemPhysics systemPhysics = new SystemPhysics(systemEntityLookup);
-		SystemCallbacks systemCallbacks = new SystemCallbacks();
-		SystemDeathAnimation systemDeathAnimation = new SystemDeathAnimation(renderer);
-		SystemKillOnCollision systemKillOnCollision = new SystemKillOnCollision();
-		SystemParticles systemParticles = new SystemParticles(renderer);
+		systems.add(systemEntityLookup);
+		systems.add(new SystemPhysics(systemEntityLookup));
+		systems.add(new SystemCallbacks());
+		systems.add(new SystemDeathAnimation(renderer));
+		systems.add(new SystemKillOnCollision());
+		systems.add(new SystemParticles(renderer));
 
-		systemEntityLookup.start();
-		systemPhysics.start();
-		systemCallbacks.start();
-		systemDeathAnimation.start();
-		systemKillOnCollision.start();
-		systemParticles.start();
+		systems.forEach(GameSystem::start);
 	}
 
 	private void setUpRenderer() {
@@ -89,7 +87,7 @@ public class Game {
 		float targetDelta = 1 / 60f;
 		timer.update(targetDelta);
 		displayFPS();
-		Event.trigger(new EventUpdate(targetDelta));
+		Event.trigger(new EventUpdate(targetDelta, true));
 		Event.trigger(new EventBeforeRender(targetDelta, timer.getRuntime()));
 
 		List<ComponentPlayer> playerList = Entity.getComponents(ComponentPlayer.class);
@@ -109,6 +107,12 @@ public class Game {
 		while (!window.shouldClose()) {
 			mainloop();
 		}
+		shutdown();
+	}
+
+	private void shutdown() {
+		//Entity.despawnAll();  // too slow
+		systems.forEach(GameSystem::stop);
 	}
 
 	public static double getRunTime() {
