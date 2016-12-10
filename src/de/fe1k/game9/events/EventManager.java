@@ -9,9 +9,13 @@ public class EventManager {
 	private EventListenerMap listeners;
 	private EventListenerMap listenersOnce;
 
+	private Queue<Event>     eventQueue;
+	private boolean          isAlreadyInvoking;
+
 	public EventManager() {
 		listeners = new EventListenerMap();
 		listenersOnce = new EventListenerMap();
+		eventQueue = new LinkedList<>();
 	}
 
 	public <T extends Event> boolean register(Class<T> eventClass, EventListener<? super T> listener) {
@@ -33,7 +37,20 @@ public class EventManager {
 	}
 
 	@SuppressWarnings("unchecked")
-	public <T extends Event> void trigger(T event) {
+	public void trigger(Event event) {
+		eventQueue.add(event);
+		if (isAlreadyInvoking) {
+			return;
+		}
+		isAlreadyInvoking = true;
+		while (!eventQueue.isEmpty()) {
+			triggerOne(eventQueue.poll());
+		}
+		isAlreadyInvoking = false;
+	}
+
+	@SuppressWarnings("unchecked")
+	private <T extends Event> void triggerOne(T event) {
 		Set<EventListener<T>> toCall = new HashSet<>();
 
 		for (EventListenerMap listenerMap : new EventListenerMap[] {listeners, listenersOnce}) {
