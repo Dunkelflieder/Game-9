@@ -1,10 +1,7 @@
 package de.fe1k.game9.systems;
 
 import de.fe1k.game9.entities.Entity;
-import de.fe1k.game9.events.Event;
-import de.fe1k.game9.events.EventEntityDestroyed;
-import de.fe1k.game9.events.EventEntityMoved;
-import de.fe1k.game9.events.EventEntitySpawned;
+import de.fe1k.game9.events.*;
 import de.fe1k.game9.utils.Vector2i;
 import de.nerogar.noise.util.Vector2f;
 
@@ -14,13 +11,21 @@ import java.util.List;
 import java.util.Map;
 
 public class SystemEntityLookup implements GameSystem {
+
 	private Map<Vector2i, List<Entity>> entityLookup = new HashMap<>();
+
+	private EventListener<EventEntityMoved>     eventEntityMoved;
+	private EventListener<EventEntitySpawned>   eventEntitySpawned;
+	private EventListener<EventEntityDestroyed> eventEntityDestroyed;
 
 	@Override
 	public void start() {
-		Event.register(EventEntityMoved.class, this::entityMoved);
-		Event.register(EventEntitySpawned.class, this::entitySpawned);
-		Event.register(EventEntityDestroyed.class, this::entityDestroyed);
+		eventEntityMoved = this::entityMoved;
+		eventEntitySpawned = this::entitySpawned;
+		eventEntityDestroyed = this::entityDestroyed;
+		Event.register(EventEntityMoved.class, eventEntityMoved);
+		Event.register(EventEntitySpawned.class, eventEntitySpawned);
+		Event.register(EventEntityDestroyed.class, eventEntityDestroyed);
 		Entity.getAll().forEach(entity -> addEntity(entity, vector2fTo2i(entity.getPosition())));
 	}
 
@@ -72,8 +77,8 @@ public class SystemEntityLookup implements GameSystem {
 
 	@Override
 	public void stop() {
-		Event.unregister(EventEntityMoved.class, this::entityMoved);
-		Event.unregister(EventEntitySpawned.class, this::entitySpawned);
-		Event.unregister(EventEntityDestroyed.class, this::entityDestroyed);
+		Event.unregister(EventEntityMoved.class, eventEntityMoved);
+		Event.unregister(EventEntitySpawned.class, eventEntitySpawned);
+		Event.unregister(EventEntityDestroyed.class, eventEntityDestroyed);
 	}
 }

@@ -3,6 +3,7 @@ package de.fe1k.game9.components;
 import de.fe1k.game9.DeferredContainerBank;
 import de.fe1k.game9.events.Event;
 import de.fe1k.game9.events.EventBeforeRender;
+import de.fe1k.game9.events.EventListener;
 import de.nerogar.noise.render.RenderProperties3f;
 import de.nerogar.noise.render.deferredRenderer.DeferredContainer;
 import de.nerogar.noise.render.deferredRenderer.DeferredRenderable;
@@ -10,16 +11,19 @@ import de.nerogar.noise.render.deferredRenderer.DeferredRenderer;
 import de.nerogar.noise.util.Vector2f;
 
 public class ComponentSpriteRenderer extends ComponentRenderer {
-	protected DeferredRenderable renderable;
-	protected DeferredRenderer renderer;
-	private String sprite;
 
-	private float z;
+	protected DeferredRenderable renderable;
+	protected DeferredRenderer   renderer;
+	private   String             sprite;
+
+	private float                            z;
+	private EventListener<EventBeforeRender> eventBeforeRender;
 
 	/**
 	 * This component causes a 2D-sprite to be rendered by the given renderer.
+	 *
 	 * @param renderer renderer to render the sprite in
-	 * @param sprite filepath of the sprite
+	 * @param sprite   filepath of the sprite
 	 */
 	public ComponentSpriteRenderer(DeferredRenderer renderer, String sprite) {
 		this(renderer, sprite, 0);
@@ -27,9 +31,10 @@ public class ComponentSpriteRenderer extends ComponentRenderer {
 
 	/**
 	 * This component causes a 2D-sprite to be rendered by the given renderer.
+	 *
 	 * @param renderer renderer to render the sprite in
-	 * @param sprite filepath of the sprite
-	 * @param z the z value for rendering
+	 * @param sprite   filepath of the sprite
+	 * @param z        the z value for rendering
 	 */
 	public ComponentSpriteRenderer(DeferredRenderer renderer, String sprite, float z) {
 		this.renderer = renderer;
@@ -37,7 +42,8 @@ public class ComponentSpriteRenderer extends ComponentRenderer {
 		this.z = z;
 
 		rebuildRenderable();
-		Event.register(EventBeforeRender.class, this::beforeRender);
+		eventBeforeRender = this::beforeRender;
+		Event.register(EventBeforeRender.class, eventBeforeRender);
 	}
 
 	private void rebuildRenderable() {
@@ -72,6 +78,6 @@ public class ComponentSpriteRenderer extends ComponentRenderer {
 	@Override
 	public void destroy() {
 		renderer.removeObject(renderable);
-		Event.unregister(EventBeforeRender.class, this::beforeRender);
+		Event.unregister(EventBeforeRender.class, eventBeforeRender);
 	}
 }

@@ -5,15 +5,19 @@ import de.fe1k.game9.components.ComponentKillOnCollision;
 import de.fe1k.game9.entities.Entity;
 import de.fe1k.game9.events.Event;
 import de.fe1k.game9.events.EventCollision;
+import de.fe1k.game9.events.EventListener;
 
 public class SystemKillOnCollision implements GameSystem {
+
+	private EventListener<EventCollision> eventCollision;
 
 	public SystemKillOnCollision() {
 	}
 
 	@Override
 	public void start() {
-		Event.register(EventCollision.class, this::entityCollision);
+		eventCollision = this::entityCollision;
+		Event.register(EventCollision.class, eventCollision);
 	}
 
 	private void entityCollision(EventCollision event) {
@@ -30,6 +34,6 @@ public class SystemKillOnCollision implements GameSystem {
 
 	@Override
 	public void stop() {
-		Event.unregister(EventCollision.class, this::entityCollision);
+		Event.unregister(EventCollision.class, eventCollision);
 	}
 }

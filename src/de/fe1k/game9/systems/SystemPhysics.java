@@ -5,6 +5,7 @@ import de.fe1k.game9.components.ComponentMoving;
 import de.fe1k.game9.entities.Entity;
 import de.fe1k.game9.events.Event;
 import de.fe1k.game9.events.EventCollision;
+import de.fe1k.game9.events.EventListener;
 import de.fe1k.game9.events.EventUpdate;
 import de.fe1k.game9.utils.Bounding;
 import de.fe1k.game9.utils.Direction;
@@ -15,7 +16,8 @@ import java.util.*;
 public class SystemPhysics implements GameSystem {
 	public static final Vector2f GRAVITY = new Vector2f(0f, -100);  // feels more responsive!
 
-	private SystemEntityLookup    entityLookup;
+	private SystemEntityLookup         entityLookup;
+	private EventListener<EventUpdate> eventUpdate;
 
 	public SystemPhysics(SystemEntityLookup entityLookup) {
 		this.entityLookup = entityLookup;
@@ -23,12 +25,13 @@ public class SystemPhysics implements GameSystem {
 
 	@Override
 	public void start() {
-		Event.register(EventUpdate.class, this::update);
+		eventUpdate = this::update;
+		Event.register(EventUpdate.class, eventUpdate);
 	}
 
 	@Override
 	public void stop() {
-		Event.unregister(EventUpdate.class, this::update);
+		Event.unregister(EventUpdate.class, eventUpdate);
 	}
 
 	private void update(EventUpdate event) {

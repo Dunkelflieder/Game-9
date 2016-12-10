@@ -4,6 +4,7 @@ import de.fe1k.game9.components.*;
 import de.fe1k.game9.entities.Entity;
 import de.fe1k.game9.events.Event;
 import de.fe1k.game9.events.EventEntityDestroyed;
+import de.fe1k.game9.events.EventListener;
 import de.fe1k.game9.utils.Bounding;
 import de.nerogar.noise.render.deferredRenderer.DeferredRenderer;
 
@@ -11,7 +12,8 @@ import java.util.Random;
 
 public class SystemDeathAnimation implements GameSystem {
 
-	private DeferredRenderer renderer;
+	private DeferredRenderer                    renderer;
+	private EventListener<EventEntityDestroyed> eventEntityDestroyed;
 
 	public SystemDeathAnimation(DeferredRenderer renderer) {
 		this.renderer = renderer;
@@ -19,7 +21,8 @@ public class SystemDeathAnimation implements GameSystem {
 
 	@Override
 	public void start() {
-		Event.register(EventEntityDestroyed.class, this::entityDestroyed);
+		eventEntityDestroyed = this::entityDestroyed;
+		Event.register(EventEntityDestroyed.class, eventEntityDestroyed);
 	}
 
 	private void entityDestroyed(EventEntityDestroyed event) {
@@ -54,6 +57,6 @@ public class SystemDeathAnimation implements GameSystem {
 
 	@Override
 	public void stop() {
-		Event.unregister(EventEntityDestroyed.class, this::entityDestroyed);
+		Event.unregister(EventEntityDestroyed.class, eventEntityDestroyed);
 	}
 }

@@ -1,26 +1,29 @@
 package de.fe1k.game9.components;
 
 import de.fe1k.game9.entities.Entity;
-import de.fe1k.game9.events.Event;
-import de.fe1k.game9.events.EventCollision;
-import de.fe1k.game9.events.EventEntityDestroyed;
-import de.fe1k.game9.events.EventUpdate;
+import de.fe1k.game9.events.*;
 import de.fe1k.game9.utils.Direction;
 import de.nerogar.noise.input.InputHandler;
 import de.nerogar.noise.util.Logger;
 
 import java.util.List;
 
-@Depends(components={ComponentMoving.class})
+@Depends(components = { ComponentMoving.class })
 public class ComponentControllable extends Component {
+
 	private InputHandler inputs;
-	private float jumpPower = 0;
+	private float   jumpPower  = 0;
 	private boolean wasKeyDown = false;
+
+	private EventListener<EventUpdate>    eventUpdate;
+	private EventListener<EventCollision> eventCollision;
 
 	public ComponentControllable(InputHandler inputHandler) {
 		this.inputs = inputHandler;
-		Event.register(EventUpdate.class, this::update);
-		Event.register(EventCollision.class, this::collision);
+		eventUpdate = this::update;
+		eventCollision = this::collision;
+		Event.register(EventUpdate.class, eventUpdate);
+		Event.register(EventCollision.class, eventCollision);
 	}
 
 	private void update(EventUpdate event) {
@@ -60,8 +63,8 @@ public class ComponentControllable extends Component {
 
 	@Override
 	public void destroy() {
-		Event.unregister(EventUpdate.class, this::update);
-		Event.unregister(EventCollision.class, this::collision);
+		Event.unregister(EventUpdate.class, eventUpdate);
+		Event.unregister(EventCollision.class, eventCollision);
 	}
 
 }

@@ -3,6 +3,7 @@ package de.fe1k.game9.systems;
 import de.fe1k.game9.components.*;
 import de.fe1k.game9.entities.Entity;
 import de.fe1k.game9.events.Event;
+import de.fe1k.game9.events.EventListener;
 import de.fe1k.game9.events.EventUpdate;
 import de.nerogar.noise.render.deferredRenderer.DeferredRenderer;
 import de.nerogar.noise.util.Vector2f;
@@ -12,7 +13,8 @@ import java.util.Random;
 
 public class SystemParticles implements GameSystem {
 
-	private DeferredRenderer renderer;
+	private DeferredRenderer           renderer;
+	private EventListener<EventUpdate> eventUpdate;
 
 	public SystemParticles(DeferredRenderer renderer) {
 		this.renderer = renderer;
@@ -20,7 +22,8 @@ public class SystemParticles implements GameSystem {
 
 	@Override
 	public void start() {
-		Event.register(EventUpdate.class, this::update);
+		eventUpdate = this::update;
+		Event.register(EventUpdate.class, eventUpdate);
 	}
 
 	private void update(EventUpdate event) {
@@ -70,6 +73,6 @@ public class SystemParticles implements GameSystem {
 
 	@Override
 	public void stop() {
-		Event.unregister(EventUpdate.class, this::update);
+		Event.unregister(EventUpdate.class, eventUpdate);
 	}
 }
