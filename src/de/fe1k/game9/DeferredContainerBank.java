@@ -2,10 +2,7 @@ package de.fe1k.game9;
 
 import de.fe1k.game9.events.Event;
 import de.fe1k.game9.events.EventBeforeRender;
-import de.nerogar.noise.render.Mesh;
-import de.nerogar.noise.render.Shader;
-import de.nerogar.noise.render.Texture2D;
-import de.nerogar.noise.render.Texture2DLoader;
+import de.nerogar.noise.render.*;
 import de.nerogar.noise.render.deferredRenderer.DeferredContainer;
 import de.nerogar.noise.util.Logger;
 
@@ -17,10 +14,10 @@ public class DeferredContainerBank {
 
 	private static class AnimationProperties {
 
-		private final int    frames;
-		private final float  delay;
-		private       int    currentFrame;
-		private       float  lastUpdate;
+		private final int   frames;
+		private final float delay;
+		private       int   currentFrame;
+		private       float lastUpdate;
 
 		public AnimationProperties(int frames, float delay) {
 			this.frames = frames;
@@ -30,8 +27,19 @@ public class DeferredContainerBank {
 		}
 	}
 
-	private static Map<String, DeferredContainer>   containers          = new HashMap<>();
-	private static Map<String, AnimationProperties> animationProperties = new HashMap<>();
+	private static class SpriteProperties {
+
+		private final boolean drawBackside;
+
+		public SpriteProperties(boolean drawBackside) {
+			this.drawBackside = drawBackside;
+		}
+	}
+
+	private static Map<String, DeferredContainer> containers = new HashMap<>();
+
+	private static Map<String, AnimationProperties> animationPropertiesMap = new HashMap<>();
+	private static Map<String, SpriteProperties>    spritePropertiesMap    = new HashMap<>();
 
 	private static final Shader transparentShader;
 
@@ -39,30 +47,39 @@ public class DeferredContainerBank {
 		return "res/sprites/" + name + "/";
 	}
 
-	private static Mesh createMesh() {
-		float offX = 0f;
-		float offY = 0f;
+	private static Mesh createMesh(boolean drawBackside) {
+		VertexList vertexList = new VertexList();
+
+		int p0 = vertexList.addVertex(0f, 0f, 0f, 0f, 0f, 0f, 0f, 1f);
+		int p1 = vertexList.addVertex(1f, 0f, 0f, 1f, 0f, 0f, 0f, 1f);
+		int p2 = vertexList.addVertex(1f, 1f, 0f, 1f, 1f, 0f, 0f, 1f);
+		int p3 = vertexList.addVertex(0f, 1f, 0f, 0f, 1f, 0f, 0f, 1f);
+
+		vertexList.addIndex(p0, p1, p3);
+		vertexList.addIndex(p1, p2, p3);
+
+		if (drawBackside) {
+			p0 = vertexList.addVertex(-1f, 0f, 0f, 0f, 0f, 0f, 0f, 1f);
+			p1 = vertexList.addVertex(0f, 0f, 0f, 1f, 0f, 0f, 0f, 1f);
+			p2 = vertexList.addVertex(0f, 1f, 0f, 1f, 1f, 0f, 0f, 1f);
+			p3 = vertexList.addVertex(-1f, 1f, 0f, 0f, 1f, 0f, 0f, 1f);
+
+			vertexList.addIndex(p0, p3, p1);
+			vertexList.addIndex(p1, p3, p2);
+		}
+
 		return new Mesh(
-				6,
-				4,
-				new int[] { 0, 1, 3, 1, 2, 3 },
-				new float[] {
-						0f - offX, 0f - offY, 0f,
-						1f - offX, 0f - offY, 0f,
-						1f - offX, 1f - offY, 0f,
-						0f - offX, 1f - offY, 0f
-				},
-				new float[] {
-						0f, 0f,
-						1f, 0f,
-						1f, 1f,
-						0f, 1f,
-				}
+				vertexList.getIndexCount(),
+				vertexList.getVertexCount(),
+				vertexList.getIndexArray(),
+				vertexList.getPositionArray(),
+				vertexList.getUVArray(),
+		        vertexList.getNormalArray()
 		);
 	}
 
 	private static void update(EventBeforeRender event) {
-		for (Map.Entry<String, DeferredContainerBank.AnimationProperties> entry : animationProperties.entrySet()) {
+		for (Map.Entry<String, DeferredContainerBank.AnimationProperties> entry : animationPropertiesMap.entrySet()) {
 			DeferredContainerBank.AnimationProperties properties = entry.getValue();
 			DeferredContainer container = containers.get(entry.getKey());
 
@@ -90,8 +107,15 @@ public class DeferredContainerBank {
 	}
 
 	private static DeferredContainer createContainer(String name, Mesh mesh) {
+		SpriteProperties spriteProperties = spritePropertiesMap.get(name);
+		AnimationProperties animationProperties = animationPropertiesMap.get(name);
+
 		if (mesh == null) {
-			mesh = createMesh();
+			boolean drawBackside = false;
+			if (spriteProperties != null) {
+				drawBackside = spriteProperties.drawBackside;
+			}
+			mesh = createMesh(drawBackside);
 		}
 
 		String colorPath = getBasePath(name) + "color.png";
@@ -120,11 +144,11 @@ public class DeferredContainerBank {
 		}
 
 		Shader shader = transparentShader;
-		if (animationProperties.containsKey(name)) {
+		if (animationProperties != null) {
 			shader = DeferredContainer.createSurfaceShader("res/shaders/spriteAnimation.vert", "res/shaders/spriteAnimation.frag");
 
 			shader.activate();
-			shader.setUniform1f("frames", animationProperties.get(name).frames);
+			shader.setUniform1f("frames", animationProperties.frames);
 			shader.deactivate();
 
 		}
@@ -144,9 +168,11 @@ public class DeferredContainerBank {
 
 		transparentShader = DeferredContainer.createSurfaceShader("res/shaders/spriteTransparent.vert", "res/shaders/spriteTransparent.frag");
 
-		animationProperties.put("man", new AnimationProperties(6, 0.07f));
-		animationProperties.put("lava", new AnimationProperties(8, 0.15f));
-		animationProperties.put("fire", new AnimationProperties(8, 0.3f));
+		animationPropertiesMap.put("man", new AnimationProperties(6, 0.07f));
+		animationPropertiesMap.put("lava", new AnimationProperties(8, 0.15f));
+		animationPropertiesMap.put("fire", new AnimationProperties(8, 0.3f));
+
+		spritePropertiesMap.put("man", new SpriteProperties(true));
 	}
 
 }

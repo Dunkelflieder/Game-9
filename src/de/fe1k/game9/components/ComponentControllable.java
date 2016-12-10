@@ -4,7 +4,10 @@ import de.fe1k.game9.entities.Entity;
 import de.fe1k.game9.events.*;
 import de.fe1k.game9.utils.Direction;
 import de.nerogar.noise.input.InputHandler;
+import de.nerogar.noise.input.KeyboardKeyEvent;
 import de.nerogar.noise.util.Logger;
+import de.nerogar.noise.util.Vector2f;
+import org.lwjgl.glfw.GLFW;
 
 @Depends(components = { ComponentMoving.class })
 public class ComponentControllable extends Component {
@@ -12,6 +15,8 @@ public class ComponentControllable extends Component {
 	private InputHandler inputs;
 	private float   jumpPower  = 0;
 	private boolean wasKeyDown = false;
+
+	private int moveDirection = 1;
 
 	private EventListener<EventUpdate>    eventUpdate;
 	private EventListener<EventCollision> eventCollision;
@@ -28,15 +33,27 @@ public class ComponentControllable extends Component {
 		ComponentMoving moving = getOwner().getComponent(ComponentMoving.class);
 		boolean isKeyDown = inputs.isKeyDown(' ');
 		boolean onGround = moving.touching[Direction.DOWN.val];
+
 		if (onGround) {
 			jumpPower = 1;
 		}
+
 		if (isKeyDown && !(onGround && wasKeyDown)) {
 			moving.velocity.add(moving.gravity.multiplied(-0.09f * jumpPower));
 			jumpPower *= 1 - (10 * event.deltaTime);
 		}
-		moving.velocity.setX(10f);
+
+		moving.velocity.setX(10f * moveDirection);
 		wasKeyDown = isKeyDown;
+
+		for (KeyboardKeyEvent keyboardKeyEvent : inputs.getKeyboardKeyEvents()) {
+			if (keyboardKeyEvent.action == GLFW.GLFW_PRESS && keyboardKeyEvent.key == GLFW.GLFW_KEY_ENTER) {
+				moveDirection *= -1;
+
+				Vector2f scale = getOwner().getScale().setX(moveDirection);
+			}
+		}
+
 	}
 
 	private void collision(EventCollision event) {
