@@ -20,7 +20,7 @@ public class EventManager {
 	public EventManager() {
 		listeners = new EventListenerMap();
 		listenersOnce = new EventListenerMap();
-		eventQueue = new LinkedList<>();
+		eventQueue = new ArrayDeque<>();
 
 		profiler = new EventProfiler();
 		Noise.getDebugWindow().addProfiler(profiler);
