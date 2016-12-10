@@ -70,6 +70,21 @@ public class MapLoader {
 				renderer.addObject(new DeferredRenderable(cont, new RenderProperties3f()));
 			}
 		}
+		// add background
+		DeferredContainer cont = DeferredContainerBank.getContainer("background", buildBackgroundMesh());
+		renderer.addObject(new DeferredRenderable(cont, new RenderProperties3f()));
+	}
+
+	private static Mesh buildBackgroundMesh() {
+		VertexList vl = new VertexList();
+		float x = -1e5f;
+		int p1 = vl.addVertex(-x, -x, -1f, -x, -x, 0, 0, 0);
+		int p2 = vl.addVertex(+x, -x, -1f, +x, -x, 0, 0, 0);
+		int p3 = vl.addVertex(+x, +x, -1f, +x, +x, 0, 0, 0);
+		int p4 = vl.addVertex(-x, +x, -1f, -x, +x, 0, 0, 0);
+		vl.addIndex(p1, p3, p4);
+		vl.addIndex(p1, p2, p3);
+		return new Mesh(vl.getIndexCount(), vl.getVertexCount(), vl.getIndexArray(), vl.getPositionArray(), vl.getUVArray());
 	}
 
 	private static Mesh buildMesh(List<Entity> entities){
