@@ -41,12 +41,14 @@ public class Game {
 		SystemCallbacks systemCallbacks = new SystemCallbacks();
 		SystemDeathAnimation systemDeathAnimation = new SystemDeathAnimation(renderer);
 		SystemKillOnCollision systemKillOnCollision = new SystemKillOnCollision();
+		SystemParticles systemParticles = new SystemParticles(renderer);
 
 		systemEntityLookup.start();
 		systemPhysics.start();
 		systemCallbacks.start();
 		systemDeathAnimation.start();
 		systemKillOnCollision.start();
+		systemParticles.start();
 	}
 
 	private void setUpRenderer() {
