@@ -8,7 +8,7 @@ import de.fe1k.game9.events.EventUpdate;
 import de.nerogar.noise.render.deferredRenderer.DeferredRenderer;
 import de.nerogar.noise.util.Vector2f;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Random;
 
 public class SystemParticles implements GameSystem {
@@ -27,7 +27,7 @@ public class SystemParticles implements GameSystem {
 	}
 
 	private void update(EventUpdate event) {
-		List<ComponentParticleSystem> components = Entity.getComponents(ComponentParticleSystem.class);
+		Collection<ComponentParticleSystem> components = Entity.getComponents(ComponentParticleSystem.class);
 
 		Random rand = new Random();
 

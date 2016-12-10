@@ -5,8 +5,6 @@ import de.fe1k.game9.events.Event;
 import de.fe1k.game9.events.EventListener;
 import de.fe1k.game9.events.EventUpdate;
 
-import java.util.List;
-
 public class ComponentFallingBlock extends Component {
 
 	private EventListener<EventUpdate> eventUpdate;
@@ -17,13 +15,13 @@ public class ComponentFallingBlock extends Component {
 	}
 
 	private void update(EventUpdate event) {
-		List<ComponentPlayer> components = Entity.getComponents(ComponentPlayer.class);
+		ComponentPlayer player = Entity.getFirstComponent(ComponentPlayer.class);
 
-		if (components.isEmpty()) return;
+		if (player == null) {
+			return;
+		}
 
-		Entity player = components.get(0).getOwner();
-
-		if (player.getPosition().getX() > getOwner().getPosition().getX()) {
+		if (player.getOwner().getPosition().getX() > getOwner().getPosition().getX()) {
 			Event.unregister(EventUpdate.class, eventUpdate);
 
 			getOwner().addComponent(new ComponentMoving());

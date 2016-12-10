@@ -194,14 +194,23 @@ public class Entity {
 	 * @param componentClass the component's class
 	 * @return list of components of that class
 	 */
-	public static <T extends Component> List<T> getComponents(Class<T> componentClass) {
-		List<T> components = new ArrayList<>();
-		for (Entity entity : entities.values()) {
-			if (entity.hasComponent(componentClass)) {
-				components.add(entity.getComponent(componentClass));
-			}
+	@SuppressWarnings("unchecked")
+	public static <T extends Component> Collection<T> getComponents(Class<T> componentClass) {
+		return (Collection<T>) componentMap.get(componentClass).values();
+	}
+
+	/**
+	 * Returns all components of the given class
+	 *
+	 * @param componentClass the component's class
+	 * @return list of components of that class
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T extends Component> T getFirstComponent(Class<T> componentClass) {
+		if (componentMap.get(componentClass).isEmpty()) {
+			return null;
 		}
-		return components;
+		return (T) componentMap.get(componentClass).values().iterator().next();
 	}
 
 	public static Entity spawn(Vector2f position) {

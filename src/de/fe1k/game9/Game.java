@@ -90,12 +90,11 @@ public class Game {
 		Event.trigger(new EventUpdate(targetDelta, true));
 		Event.trigger(new EventBeforeRender(targetDelta, timer.getRuntime()));
 
-		List<ComponentPlayer> playerList = Entity.getComponents(ComponentPlayer.class);
-		if (!playerList.isEmpty()) {
-			Entity player = playerList.get(0).getOwner();
+		ComponentPlayer player = Entity.getFirstComponent(ComponentPlayer.class);
 
-			camera.setX(player.getPosition().getX());
-			camera.setY(player.getPosition().getY());
+		if (player != null) {
+			camera.setX(player.getOwner().getPosition().getX());
+			camera.setY(player.getOwner().getPosition().getY());
 		}
 
 		renderer.render(camera);
