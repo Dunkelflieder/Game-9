@@ -15,8 +15,8 @@ public enum Tile {
 	PILLAR(0xFFBB00, "pillar", true, new EntityBuilderBlock()),
 	BARRIER(0xFFFF00, "barrier", true, new EntityBuilderBlock()),
 	LAMP(0xFFAA00, "lamp_ceiling", true, new EntityBuilderLamp()),
-	LAVA(0x800000, "lava", false, new EntityBuilderLava()),
-	FIRE(0xFF0000, "fire", false, new EntityBuilderFire());
+	LAVA(0x800000, "lava", true, new EntityBuilderLava()),
+	FIRE(0xFF0000, "fire", true, new EntityBuilderFire());
 
 	public interface EntityBuilder {
 
