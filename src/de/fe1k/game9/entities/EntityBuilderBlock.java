@@ -11,8 +11,7 @@ public class EntityBuilderBlock implements Tile.EntityBuilder {
 
 	@Override
 	public void createEntity(Entity entity, Tile tile, int markerColor) {
-		Bounding bounding = new Bounding(0, 0, 1, 1);
-		entity.addComponent(new ComponentBounding(bounding, ComponentBounding.LAYER_MAP, ComponentBounding.LAYER_ALL));
+		entity.addComponent(new ComponentBounding(new Bounding(), ComponentBounding.LAYER_MAP, ComponentBounding.LAYER_ALL));
 		if (tile.texname != null) {
 			if (tile.stationary) {
 				entity.addComponent(new ComponentRenderer());
