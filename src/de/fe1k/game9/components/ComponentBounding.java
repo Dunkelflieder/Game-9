@@ -1,6 +1,7 @@
 package de.fe1k.game9.components;
 
 import de.fe1k.game9.utils.Bounding;
+import de.nerogar.noise.util.Vector2f;
 
 public class ComponentBounding extends Component {
 	public static final int LAYER_NONE = 0;
@@ -16,5 +17,11 @@ public class ComponentBounding extends Component {
 		this.bounding = bounding;
 		this.layerSelf = layerSelf;
 		this.layerCollides = layerCollides;
+	}
+	public Bounding getTranslatedBounding() {
+		return bounding.translated(new Vector2f(
+				getOwner().getPosition().getX(),
+				getOwner().getPosition().getY()
+		));
 	}
 }

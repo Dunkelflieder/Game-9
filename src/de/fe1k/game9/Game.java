@@ -36,16 +36,14 @@ public class Game {
 	}
 
 	private void setUpSystems() {
-		SystemMoving systemMoving = new SystemMoving();
 		SystemEntityLookup systemEntityLookup = new SystemEntityLookup();
-		SystemCollision systemCollision = new SystemCollision(systemEntityLookup);
+		SystemPhysics systemPhysics = new SystemPhysics(systemEntityLookup);
 		SystemCallbacks systemCallbacks = new SystemCallbacks();
 		SystemDeathAnimation systemDeathAnimation = new SystemDeathAnimation(renderer);
 		SystemKillOnCollision systemKillOnCollision = new SystemKillOnCollision();
 
-		systemMoving.start();
 		systemEntityLookup.start();
-		systemCollision.start();
+		systemPhysics.start();
 		systemCallbacks.start();
 		systemDeathAnimation.start();
 		systemKillOnCollision.start();
