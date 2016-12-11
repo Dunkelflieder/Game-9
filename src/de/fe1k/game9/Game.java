@@ -49,9 +49,7 @@ public class Game {
 	}
 
 	private void setUpSystems() {
-		SystemEntityLookup systemEntityLookup = new SystemEntityLookup();
-		systems.add(systemEntityLookup);
-		systems.add(new SystemPhysics(systemEntityLookup));
+		systems.add(new SystemPhysics());
 		systems.add(new SystemCallbacks());
 		systems.add(new SystemDeathAnimation(renderer));
 		systems.add(new SystemKillOnCollision());

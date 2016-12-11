@@ -4,6 +4,10 @@ public class Vector2i {
 	private int x;
 	private int y;
 
+	public Vector2i() {
+		this(0, 0);
+	}
+
 	public Vector2i(int x, int y) {
 		this.x = x;
 		this.y = y;
@@ -43,5 +47,10 @@ public class Vector2i {
 		int result = x;
 		result = 31 * result + y;
 		return result;
+	}
+
+	@Override
+	public Vector2i clone() {
+		return new Vector2i(x, y);
 	}
 }

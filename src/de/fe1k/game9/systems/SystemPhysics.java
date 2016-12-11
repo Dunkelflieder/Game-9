@@ -16,16 +16,10 @@ import java.util.*;
 public class SystemPhysics implements GameSystem {
 	public static final Vector2f GRAVITY = new Vector2f(0f, -100);  // feels more responsive!
 
-	private SystemEntityLookup         entityLookup;
-	private EventListener<EventUpdate> eventUpdate;
-
-	public SystemPhysics(SystemEntityLookup entityLookup) {
-		this.entityLookup = entityLookup;
-	}
+	private EventListener<EventUpdate> eventUpdate = this::update;
 
 	@Override
 	public void start() {
-		eventUpdate = this::update;
 		Event.register(EventUpdate.class, eventUpdate);
 	}
 
@@ -43,15 +37,15 @@ public class SystemPhysics implements GameSystem {
 	private List<ComponentBounding> getPossibleColliders(ComponentBounding bounding, int x, int y) {
 		// get all entities in close proximity (assuming they are max. 1 unit big)
 		Set<Entity> possiblyCollidingSet = new HashSet<>();
-		possiblyCollidingSet.addAll(entityLookup.getAt(x - 1, y - 1));
-		possiblyCollidingSet.addAll(entityLookup.getAt(x + 0, y - 1));
-		possiblyCollidingSet.addAll(entityLookup.getAt(x + 1, y - 1));
-		possiblyCollidingSet.addAll(entityLookup.getAt(x - 1, y + 0));
-		possiblyCollidingSet.addAll(entityLookup.getAt(x + 0, y + 0));
-		possiblyCollidingSet.addAll(entityLookup.getAt(x + 1, y + 0));
-		possiblyCollidingSet.addAll(entityLookup.getAt(x - 1, y + 1));
-		possiblyCollidingSet.addAll(entityLookup.getAt(x + 0, y + 1));
-		possiblyCollidingSet.addAll(entityLookup.getAt(x + 1, y + 1));
+		possiblyCollidingSet.addAll(Entity.getAt(x - 1, y - 1));
+		possiblyCollidingSet.addAll(Entity.getAt(x + 0, y - 1));
+		possiblyCollidingSet.addAll(Entity.getAt(x + 1, y - 1));
+		possiblyCollidingSet.addAll(Entity.getAt(x - 1, y + 0));
+		possiblyCollidingSet.addAll(Entity.getAt(x + 0, y + 0));
+		possiblyCollidingSet.addAll(Entity.getAt(x + 1, y + 0));
+		possiblyCollidingSet.addAll(Entity.getAt(x - 1, y + 1));
+		possiblyCollidingSet.addAll(Entity.getAt(x + 0, y + 1));
+		possiblyCollidingSet.addAll(Entity.getAt(x + 1, y + 1));
 
 		List<ComponentBounding> possiblyColliding = new ArrayList<>();
 		for (Entity candidate : possiblyCollidingSet) {

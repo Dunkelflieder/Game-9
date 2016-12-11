@@ -7,9 +7,11 @@ import de.fe1k.game9.events.EventEntityMoved;
 import de.fe1k.game9.events.EventEntitySpawned;
 import de.fe1k.game9.exceptions.ComponentAlreadyExistsException;
 import de.fe1k.game9.exceptions.MissingComponentDependenciesException;
+import de.fe1k.game9.utils.Vector2i;
 import de.nerogar.noise.util.Vector2f;
 
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 public class Entity {
@@ -84,6 +86,7 @@ public class Entity {
 		}
 		Vector2f from = position.clone();
 		position.set(to);
+		moveLookup(from.getX(), from.getY(), position.getX(), position.getY());
 		Event.trigger(new EventEntityMoved(this, from, position.clone()));
 	}
 
@@ -93,6 +96,7 @@ public class Entity {
 		}
 		Vector2f from = position.clone();
 		position.add(delta);
+		moveLookup(from.getX(), from.getY(), position.getX(), position.getY());
 		Event.trigger(new EventEntityMoved(this, from, position.clone()));
 	}
 
@@ -191,10 +195,32 @@ public class Entity {
 	}
 
 	/**
+	 * Returns all components of the given class that match the given predicate.
+	 *
+	 * @param componentClass the component's class
+	 * @param predicate the predicate to evaluate
+	 * @return collection of components of that class matching the predicate
+	 */
+	public static <T extends Component> Collection<T> getComponents(Class<T> componentClass, Predicate<T> predicate) {
+		@SuppressWarnings("unchecked") Map<Entity, T> components = (Map<Entity, T>) componentMap.get(componentClass);
+		Collection<T> matches = new ArrayList<>();
+		if (components == null) {
+			return matches;
+		}
+		for (T component : components.values()) {
+			if (predicate.test(component)) {
+				matches.add(component);
+			}
+		}
+		return matches;
+	}
+
+
+	/**
 	 * Returns all components of the given class
 	 *
 	 * @param componentClass the component's class
-	 * @return list of components of that class
+	 * @return collection of components of that class
 	 */
 	public static <T extends Component> Collection<T> getComponents(Class<T> componentClass) {
 		@SuppressWarnings("unchecked") Map<Entity, T> components = (Map<Entity, T>) componentMap.get(componentClass);
@@ -205,10 +231,30 @@ public class Entity {
 	}
 
 	/**
-	 * Returns all components of the given class
+	 * Returns the first components of the given class that match the given predicate
 	 *
 	 * @param componentClass the component's class
-	 * @return list of components of that class
+	 * @param predicate the predicate to evaluate
+	 * @return one components of that class matching the predicate, or null if none found
+	 */
+	public static <T extends Component> T getFirstComponent(Class<T> componentClass, Predicate<T> predicate) {
+		@SuppressWarnings("unchecked") Map<Entity, T> components = (Map<Entity, T>) componentMap.get(componentClass);
+		if (components == null || components.isEmpty()) {
+			return null;
+		}
+		for (T component : components.values()) {
+			if (predicate.test(component)) {
+				return component;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Returns the first components of the given class
+	 *
+	 * @param componentClass the component's class
+	 * @return one component of that class, or null if none found
 	 */
 	public static <T extends Component> T getFirstComponent(Class<T> componentClass) {
 		@SuppressWarnings("unchecked") Map<Entity, T> components = (Map<Entity, T>) componentMap.get(componentClass);
@@ -221,6 +267,7 @@ public class Entity {
 	public static Entity spawn(Vector2f position) {
 		Entity entity = new Entity(getUniqueId(), position);
 		entities.put(entity.getId(), entity);
+		entity.addLookup(position.getX(), position.getY());
 		Event.trigger(new EventEntitySpawned(entity));
 		return entity;
 	}
@@ -228,6 +275,7 @@ public class Entity {
 	public static void despawn(long entityId) {
 		Entity removedEntity = entities.remove(entityId);
 		Event.trigger(new EventEntityDestroyed(removedEntity));
+		removedEntity.removeLookup(removedEntity.position.getX(), removedEntity.position.getY());
 		removedEntity.destroy();
 	}
 
@@ -288,6 +336,64 @@ public class Entity {
 
 	private static long getUniqueId() {
 		return uniqueIdRandom.nextLong();
+	}
+
+	////////////////// Entity Lookup Code //////////////////
+
+	private static Map<Vector2i, List<Entity>> entityLookup = new HashMap<>();
+	private static Vector2i temp = new Vector2i();
+
+	public static List<Entity> getAt(int x, int y) {
+		Vector2i pos = getTempVector(x, y);
+		if (!entityLookup.containsKey(pos)) {
+			// clone temp to avoid mutation of the HashMap key
+			entityLookup.put(pos.clone(), new ArrayList<>());
+		}
+		return entityLookup.get(pos);
+	}
+
+	public static List<Entity> getAt(float x, float y) {
+		return getAt((int) Math.floor(x), (int) Math.floor(y));
+	}
+
+	private void addLookup(int x, int y) {
+		Vector2i pos = getTempVector(x, y);
+		if (!entityLookup.containsKey(pos)) {
+			// clone temp to avoid mutation of the HashMap key
+			entityLookup.put(pos.clone(), new ArrayList<>());
+		}
+		entityLookup.get(pos).add(this);
+	}
+
+	private void addLookup(float x, float y) {
+		addLookup((int) Math.floor(x), (int) Math.floor(y));
+	}
+
+	private void removeLookup(int x, int y) {
+		Vector2i pos = getTempVector(x, y);
+		if (entityLookup.containsKey(pos)) {
+			entityLookup.get(pos).remove(this);
+		}
+	}
+
+	private void removeLookup(float x, float y) {
+		removeLookup((int) Math.floor(x), (int) Math.floor(y));
+	}
+
+	private void moveLookup(int fromX, int fromY, int toX, int toY) {
+		if (fromX == toX && fromY == toY) return;
+		removeLookup(fromX, fromY);
+		addLookup(toX, toY);
+	}
+
+	private void moveLookup(float fromX, float fromY, float toX, float toY) {
+		moveLookup((int) Math.floor(fromX), (int) Math.floor(fromY), (int) Math.floor(toX), (int) Math.floor(toY));
+	}
+
+	private static Vector2i getTempVector(int x, int y) {
+		temp.setX(x);
+		temp.setY(y);
+		return temp;
 	}
 
 }
