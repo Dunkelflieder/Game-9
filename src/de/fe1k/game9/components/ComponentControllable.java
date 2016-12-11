@@ -69,7 +69,7 @@ public class ComponentControllable extends Component {
 	}
 
 	public void resetPosition() {
-		ComponentStartMarker start = Entity.getFirstComponent(ComponentStartMarker.class);
+		ComponentMarker start = Entity.getFirstComponent(ComponentMarker.class, marker -> marker.getMarker() == ComponentMarker.MARKER_START);
 		if (start == null) {
 			Logger.getErrorStream().printf("No start marker found, can't teleport to start!");
 			return;
