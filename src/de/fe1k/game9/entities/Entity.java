@@ -8,6 +8,7 @@ import de.fe1k.game9.events.EventEntitySpawned;
 import de.fe1k.game9.exceptions.ComponentAlreadyExistsException;
 import de.fe1k.game9.exceptions.MissingComponentDependenciesException;
 import de.fe1k.game9.utils.Vector2i;
+import de.nerogar.noise.util.Logger;
 import de.nerogar.noise.util.Vector2f;
 
 import java.util.*;
@@ -166,12 +167,16 @@ public class Entity {
 
 	private static ComponentMap      componentMap;
 	private static Map<Long, Entity> entities;
-	private static Random            uniqueIdRandom;
+	private static Long              prevUniqueId;
 
 	static {
 		componentMap = new ComponentMap();
 		entities = new HashMap<>();
-		uniqueIdRandom = new Random();
+		prevUniqueId = 0L;
+	}
+
+	private static long getUniqueId() {
+		return prevUniqueId++;
 	}
 
 	public static Entity getById(long id) {
@@ -200,6 +205,7 @@ public class Entity {
 		return entitiesWithComponents;
 	}
 
+
 	/**
 	 * Returns all components of the given class that match the given predicate.
 	 *
@@ -220,7 +226,6 @@ public class Entity {
 		}
 		return matches;
 	}
-
 
 	/**
 	 * Returns all components of the given class
@@ -280,6 +285,10 @@ public class Entity {
 
 	public static void despawn(long entityId) {
 		Entity removedEntity = entities.remove(entityId);
+		if (removedEntity == null) {
+			Logger.getWarningStream().println("Trying to despawn nonexistent entity: " + entityId);
+			return;
+		}
 		Event.trigger(new EventEntityDestroyed(removedEntity));
 		removedEntity.removeLookup(removedEntity.position.getX(), removedEntity.position.getY());
 		removedEntity.destroy();
@@ -318,9 +327,7 @@ public class Entity {
 		if (components == null) {
 			return null;
 		}
-		T removedComponent = components.remove(entity);
-		entity.throwOnMissingDependencies();
-		return removedComponent;
+		return components.remove(entity);
 	}
 
 	private static boolean hasComponent(Entity entity, Class<? extends Component> componentClass) {
@@ -338,12 +345,9 @@ public class Entity {
 
 	public static void despawnAll() {
 		while (!entities.isEmpty()) {
-			despawn(entities.values().iterator().next().getId());
+			despawn(entities.keySet().iterator().next());
 		}
-	}
-
-	private static long getUniqueId() {
-		return uniqueIdRandom.nextLong();
+		prevUniqueId = 0L;
 	}
 
 	////////////////// Entity Lookup Code //////////////////
