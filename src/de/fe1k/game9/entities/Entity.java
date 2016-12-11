@@ -194,9 +194,12 @@ public class Entity {
 	 * @param componentClass the component's class
 	 * @return list of components of that class
 	 */
-	@SuppressWarnings("unchecked")
 	public static <T extends Component> Collection<T> getComponents(Class<T> componentClass) {
-		return (Collection<T>) componentMap.get(componentClass).values();
+		@SuppressWarnings("unchecked") Map<Entity, T> components = (Map<Entity, T>) componentMap.get(componentClass);
+		if (components == null) {
+			return new ArrayList<>();
+		}
+		return components.values();
 	}
 
 	/**
@@ -205,12 +208,12 @@ public class Entity {
 	 * @param componentClass the component's class
 	 * @return list of components of that class
 	 */
-	@SuppressWarnings("unchecked")
 	public static <T extends Component> T getFirstComponent(Class<T> componentClass) {
-		if (componentMap.get(componentClass).isEmpty()) {
+		@SuppressWarnings("unchecked") Map<Entity, T> components = (Map<Entity, T>) componentMap.get(componentClass);
+		if (components == null || components.isEmpty()) {
 			return null;
 		}
-		return (T) componentMap.get(componentClass).values().iterator().next();
+		return components.values().iterator().next();
 	}
 
 	public static Entity spawn(Vector2f position) {
@@ -259,9 +262,6 @@ public class Entity {
 		}
 		T removedComponent = components.remove(entity);
 		entity.throwOnMissingDependencies();
-		if (removedComponent != null) {
-			//removedComponent.setOwner(null);
-		}
 		return removedComponent;
 	}
 
