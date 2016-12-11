@@ -364,6 +364,14 @@ public class Entity {
 		return getAt((int) Math.floor(x), (int) Math.floor(y));
 	}
 
+	public static Entity getFirstAt(float x, float y) {
+		return getAt(x, y).stream().findFirst().orElse(null);
+	}
+
+	public static Entity getFirstAt(float x, float y, Predicate<Entity> predicate) {
+		return getAt(x, y).stream().filter(predicate).findFirst().orElse(null);
+	}
+
 	private void addLookup(int x, int y) {
 		Vector2i pos = getTempVector(x, y);
 		if (!entityLookup.containsKey(pos)) {
