@@ -11,7 +11,7 @@ import java.io.IOException;
 
 public class PacketNetworkedEvent implements Packet {
 
-	private EventNetworked event;
+	public EventNetworked event;
 
 	public PacketNetworkedEvent() {
 	}

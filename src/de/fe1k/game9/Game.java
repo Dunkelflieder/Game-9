@@ -6,6 +6,7 @@ import de.fe1k.game9.events.Event;
 import de.fe1k.game9.events.EventBeforeRender;
 import de.fe1k.game9.events.EventUpdate;
 import de.fe1k.game9.map.MapLoader;
+import de.fe1k.game9.network.Network;
 import de.fe1k.game9.systems.*;
 import de.nerogar.noise.Noise;
 import de.nerogar.noise.render.GLWindow;
@@ -14,6 +15,7 @@ import de.nerogar.noise.render.RenderHelper;
 import de.nerogar.noise.render.deferredRenderer.DeferredRenderer;
 import de.nerogar.noise.util.Timer;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,7 +36,16 @@ public class Game {
 		setUpCamera();
 		setUpRenderer();
 		setUpSystems();
+		start();
+	}
+
+	private void start() {
 		MapLoader.loadMap(renderer, "res/map/map1");
+		try {
+			Network.startServer(4200);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private void setUpSystems() {
@@ -87,7 +98,7 @@ public class Game {
 		float targetDelta = 1 / 60f;
 		timer.update(targetDelta);
 		displayFPS();
-		Event.trigger(new EventUpdate(targetDelta, true));
+		Event.trigger(new EventUpdate(targetDelta));
 		Event.trigger(new EventBeforeRender(targetDelta, timer.getRuntime()));
 
 		ComponentPlayer player = Entity.getFirstComponent(ComponentPlayer.class);
