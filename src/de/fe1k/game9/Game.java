@@ -40,7 +40,7 @@ public class Game {
 	}
 
 	private void start() {
-		MapLoader.loadMap(renderer, "res/map/map1");
+		MapLoader.loadMap(renderer, "res/map/map_dungeon0");
 		try {
 			Network.startServer(4200);
 		} catch (IOException e) {
