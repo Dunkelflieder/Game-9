@@ -57,7 +57,7 @@ public class SystemParticles implements GameSystem {
 					componentMoving.velocity.set(spawnVelocity);
 					particle.addComponent(componentMoving);
 
-					particle.addComponent(new ComponentSpriteRenderer(renderer, component.sprite));
+					particle.addComponent(new ComponentSpriteRenderer(renderer, component.sprite, 1));
 
 					particle.addComponent(new ComponentDespawn(component.lifetimeMin + rand.nextFloat() * component.lifetimeRand));
 
