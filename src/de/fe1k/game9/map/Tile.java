@@ -8,7 +8,6 @@ import java.util.stream.Stream;
 
 public enum Tile {
 
-	MARKER(0xFFFFFF, null, false, new EntityBuilderMarker()),
 	PLAYER(0x00AA00, null, false, new EntityBuilderPlayer()),
 	GROUND(0x000000, "ground", true, new EntityBuilderBlock()),
 	FLOOR(0x111111, "floor", true, new EntityBuilderBlock()),

@@ -1,7 +1,10 @@
 package de.fe1k.game9.map;
 
 import de.fe1k.game9.DeferredContainerBank;
+import de.fe1k.game9.components.ComponentMarker;
 import de.fe1k.game9.entities.Entity;
+import de.fe1k.game9.events.Event;
+import de.fe1k.game9.events.EventMapLoaded;
 import de.nerogar.noise.render.Mesh;
 import de.nerogar.noise.render.RenderProperties3f;
 import de.nerogar.noise.render.VertexList;
@@ -31,6 +34,7 @@ public class MapLoader {
 
 		try {
 			BufferedImage levelImg = ImageIO.read(new File(foldername + "/level.png"));
+			BufferedImage metaImg = ImageIO.read(new File(foldername + "/meta.png"));
 			BufferedImage markerImg = ImageIO.read(new File(foldername + "/marker.png"));
 
 			int width = levelImg.getWidth();
@@ -39,7 +43,8 @@ public class MapLoader {
 			for (int x = 0; x < width; x++) {
 				for (int y = 0; y < height; y++) {
 					int blockColor = levelImg.getRGB(x, height - y - 1);
-					int markerColor = markerImg.getRGB(x, height - y - 1) & 0xFFFFFF;
+					int metaColor = metaImg.getRGB(x, height - y - 1) & 0xFFFFFF;
+					int markerColor = markerImg.getRGB(x, height - y - 1);
 
 					if ((blockColor & 0xFF000000) != 0) {
 						blockColor &= 0xFFFFFF;
@@ -50,8 +55,13 @@ public class MapLoader {
 							tile = Tile.GROUND;
 						}
 
-						Entity entity = tile.createEntity(new Vector2f(x, y), markerColor);
+						Entity entity = tile.createEntity(new Vector2f(x, y), metaColor);
 						entitiesPerTile.get(tile).add(entity);
+					}
+					if ((markerColor & 0xFF000000) != 0) {
+						markerColor &= 0xFFFFFF;
+						Entity markerEntity = Entity.spawn(new Vector2f(x, y));
+						markerEntity.addComponent(new ComponentMarker(markerColor));
 					}
 				}
 			}
@@ -73,6 +83,8 @@ public class MapLoader {
 		// add background
 		DeferredContainer cont = DeferredContainerBank.getContainer("background", buildBackgroundMesh());
 		renderer.addObject(new DeferredRenderable(cont, new RenderProperties3f()));
+
+		Event.trigger(new EventMapLoaded(foldername));
 	}
 
 	private static Mesh buildBackgroundMesh() {
