@@ -15,8 +15,8 @@ public class ComponentControllable extends Component {
 	private float   jumpPower  = 0;
 	private boolean wasKeyDown = false;
 
-	private int   moveDirection       = 1;
-	private float targetMoveDirection = moveDirection;
+	private int   targetMoveDirection = 1;
+	private float moveDirection       = targetMoveDirection;
 
 	private EventListener<EventUpdate>    eventUpdate;
 	private EventListener<EventCollision> eventCollision;
@@ -48,12 +48,12 @@ public class ComponentControllable extends Component {
 
 		for (KeyboardKeyEvent keyboardKeyEvent : inputs.getKeyboardKeyEvents()) {
 			if (keyboardKeyEvent.action == GLFW.GLFW_PRESS && keyboardKeyEvent.key == GLFW.GLFW_KEY_ENTER) {
-				moveDirection *= -1;
+				targetMoveDirection *= -1;
 			}
 		}
-		if (targetMoveDirection < moveDirection) targetMoveDirection += 10 * event.deltaTime;
-		if (targetMoveDirection > moveDirection) targetMoveDirection -= 10 * event.deltaTime;
-		getOwner().getScale().setX(targetMoveDirection);
+		if (moveDirection < targetMoveDirection) moveDirection += 10 * event.deltaTime;
+		if (moveDirection > targetMoveDirection) moveDirection -= 10 * event.deltaTime;
+		getOwner().getScale().setX(moveDirection);
 
 	}
 
