@@ -26,8 +26,8 @@ public class ComponentLight extends Component {
 	}
 
 	private void updateLight(EventBeforeRender event) {
-		light.position.setX(getOwner().getPosition().getX());
-		light.position.setY(getOwner().getPosition().getY());
+		light.position.setX(getOwner().getPosition().getX() + Math.abs(getOwner().getScale().getX()) * 0.5f);
+		light.position.setY(getOwner().getPosition().getY() + Math.abs(getOwner().getScale().getY()) * 0.5f);
 	}
 
 	@Override
