@@ -6,7 +6,6 @@ import de.fe1k.game9.utils.Direction;
 import de.nerogar.noise.input.InputHandler;
 import de.nerogar.noise.input.KeyboardKeyEvent;
 import de.nerogar.noise.util.Logger;
-import de.nerogar.noise.util.Vector2f;
 import org.lwjgl.glfw.GLFW;
 
 @Depends(components = { ComponentMoving.class })
@@ -16,7 +15,8 @@ public class ComponentControllable extends Component {
 	private float   jumpPower  = 0;
 	private boolean wasKeyDown = false;
 
-	private int moveDirection = 1;
+	private int   moveDirection       = 1;
+	private float targetMoveDirection = moveDirection;
 
 	private EventListener<EventUpdate>    eventUpdate;
 	private EventListener<EventCollision> eventCollision;
@@ -49,10 +49,11 @@ public class ComponentControllable extends Component {
 		for (KeyboardKeyEvent keyboardKeyEvent : inputs.getKeyboardKeyEvents()) {
 			if (keyboardKeyEvent.action == GLFW.GLFW_PRESS && keyboardKeyEvent.key == GLFW.GLFW_KEY_ENTER) {
 				moveDirection *= -1;
-
-				Vector2f scale = getOwner().getScale().setX(moveDirection);
 			}
 		}
+		if (targetMoveDirection < moveDirection) targetMoveDirection += 10 * event.deltaTime;
+		if (targetMoveDirection > moveDirection) targetMoveDirection -= 10 * event.deltaTime;
+		getOwner().getScale().setX(targetMoveDirection);
 
 	}
 
