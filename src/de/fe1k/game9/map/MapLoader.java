@@ -52,7 +52,7 @@ public class MapLoader {
 						Tile tile = Tile.fromColor(blockColor);
 						if (tile == null) {
 							Logger.getWarningStream().printf("Unrecognized tile for color: 0x%06x", blockColor);
-							tile = Tile.GROUND;
+							tile = Tile.LAMP;
 						}
 
 						Entity entity = tile.createEntity(new Vector2f(x, y), metaColor);
