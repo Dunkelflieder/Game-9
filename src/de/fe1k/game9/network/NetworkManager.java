@@ -130,4 +130,18 @@ class NetworkManager {
 		Event.unregister(EventToClients.class, eventToClients);
 	}
 
+	public boolean isStarted() {
+		return started;
+	}
+
+	public List<Connection> getClients() {
+		if (!isServer()) throw new IllegalStateException("No server running.");
+		return clients;
+	}
+
+	public Connection getServer() {
+		if (isServer()) throw new IllegalStateException("Is server itself.");
+		return serverConnection;
+	}
+
 }

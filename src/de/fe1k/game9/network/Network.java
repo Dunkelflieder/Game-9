@@ -1,9 +1,11 @@
 package de.fe1k.game9.network;
 
+import de.nerogar.noise.network.Connection;
 import de.nerogar.noise.util.Logger;
 
 import java.io.IOException;
 import java.net.BindException;
+import java.util.List;
 
 public class Network {
 
@@ -30,4 +32,15 @@ public class Network {
 		Logger.getInfoStream().println("Networking shut down.");
 	}
 
+	public static boolean isStarted() {
+		return globalNetwork.isStarted();
+	}
+
+	public static List<Connection> getClients() {
+		return globalNetwork.getClients();
+	}
+
+	public static Connection getServer() {
+		return globalNetwork.getServer();
+	}
 }
