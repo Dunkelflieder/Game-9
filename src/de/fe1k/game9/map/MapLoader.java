@@ -2,6 +2,7 @@ package de.fe1k.game9.map;
 
 import de.fe1k.game9.DeferredContainerBank;
 import de.fe1k.game9.components.ComponentMarker;
+import de.fe1k.game9.components.ComponentStationaryRenderer;
 import de.fe1k.game9.entities.Entity;
 import de.fe1k.game9.events.Event;
 import de.fe1k.game9.events.EventMapLoaded;
@@ -65,13 +66,20 @@ public class MapLoader {
 			List<Entity> entities = entry.getValue();
 
 			if (tile.stationary) {
-				DeferredContainer cont = DeferredContainerBank.getContainer(tile.texname, buildMesh(entities));
-				renderer.addObject(new DeferredRenderable(cont, new RenderProperties3f()));
+				DeferredContainer container = DeferredContainerBank.getContainer(tile.texname, buildMesh(entities));
+				DeferredRenderable renderable = new DeferredRenderable(container, new RenderProperties3f());
+
+				Entity renderableEntity = Entity.spawn(new Vector2f());
+				renderableEntity.addComponent(new ComponentStationaryRenderer(renderer, renderable));
 			}
 		}
+
 		// add background
-		DeferredContainer cont = DeferredContainerBank.getContainer("background", buildBackgroundMesh());
-		renderer.addObject(new DeferredRenderable(cont, new RenderProperties3f()));
+		DeferredContainer container = DeferredContainerBank.getContainer("background", buildBackgroundMesh());
+		DeferredRenderable renderable = new DeferredRenderable(container, new RenderProperties3f());
+
+		Entity backgroundEntity = Entity.spawn(new Vector2f());
+		backgroundEntity.addComponent(new ComponentStationaryRenderer(renderer, renderable));
 
 		Event.trigger(new EventMapLoaded(foldername));
 	}
@@ -88,7 +96,7 @@ public class MapLoader {
 		return new Mesh(vl.getIndexCount(), vl.getVertexCount(), vl.getIndexArray(), vl.getPositionArray(), vl.getUVArray());
 	}
 
-	private static Mesh buildMesh(List<Entity> entities){
+	private static Mesh buildMesh(List<Entity> entities) {
 		VertexList vl = new VertexList();
 		for (Entity e : entities) {
 			Vector2f pos = e.getPosition();
