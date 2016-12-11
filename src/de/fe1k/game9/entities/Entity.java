@@ -178,11 +178,13 @@ public class Entity {
 	 * @param componentClasses list of component classes to check for
 	 * @return stream of entities that have all the components
 	 */
-	public static List<Entity> getAllWithComponentss(Class<? extends Component>... componentClasses) {
-		List<Entity> entitiesWithComponents = new ArrayList<>();
-		for (Entity entity : entities.values()) {
-			if (Arrays.stream(componentClasses).allMatch(entity::hasComponent)) {
-				entitiesWithComponents.add(entity);
+	@SafeVarargs
+	public static Set<Entity> getAllWithComponents(Class<? extends Component>... componentClasses) {
+		Set<Entity> entitiesWithComponents = new HashSet<>();
+		for (Class<? extends Component> componentClass : componentClasses) {
+			Map<Entity, Component> entityMap = componentMap.get(componentClass);
+			if (entityMap != null) {
+				entitiesWithComponents.addAll(entityMap.keySet());
 			}
 		}
 		return entitiesWithComponents;
