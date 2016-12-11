@@ -14,10 +14,6 @@ import de.nerogar.noise.render.deferredRenderer.DeferredRenderer;
 import de.nerogar.noise.util.Logger;
 import de.nerogar.noise.util.Vector2f;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,42 +28,35 @@ public class MapLoader {
 			entitiesPerTile.put(tile, new ArrayList<>());
 		}
 
-		try {
-			BufferedImage levelImg = ImageIO.read(new File(foldername + "/level.png"));
-			BufferedImage metaImg = ImageIO.read(new File(foldername + "/meta.png"));
-			BufferedImage markerImg = ImageIO.read(new File(foldername + "/marker.png"));
+		MapCache.MapFileContainer mapFiles = MapCache.getMapContainer(foldername);
 
-			int width = levelImg.getWidth();
-			int height = levelImg.getHeight();
+		int width = mapFiles.levelImg.getWidth();
+		int height = mapFiles.levelImg.getHeight();
 
-			for (int x = 0; x < width; x++) {
-				for (int y = 0; y < height; y++) {
-					int blockColor = levelImg.getRGB(x, height - y - 1);
-					int metaColor = metaImg.getRGB(x, height - y - 1) & 0xFFFFFF;
-					int markerColor = markerImg.getRGB(x, height - y - 1);
+		for (int x = 0; x < width; x++) {
+			for (int y = 0; y < height; y++) {
+				int blockColor = mapFiles.levelImg.getRGB(x, height - y - 1);
+				int metaColor = mapFiles.metaImg.getRGB(x, height - y - 1) & 0xFFFFFF;
+				int markerColor = mapFiles.markerImg.getRGB(x, height - y - 1);
 
-					if ((blockColor & 0xFF000000) != 0) {
-						blockColor &= 0xFFFFFF;
+				if ((blockColor & 0xFF000000) != 0) {
+					blockColor &= 0xFFFFFF;
 
-						Tile tile = Tile.fromColor(blockColor);
-						if (tile == null) {
-							Logger.getWarningStream().printf("Unrecognized tile for color: 0x%06x", blockColor);
-							tile = Tile.LAMP;
-						}
-
-						Entity entity = tile.createEntity(new Vector2f(x, y), metaColor);
-						entitiesPerTile.get(tile).add(entity);
+					Tile tile = Tile.fromColor(blockColor);
+					if (tile == null) {
+						Logger.getWarningStream().printf("Unrecognized tile for color: 0x%06x", blockColor);
+						tile = Tile.LAMP;
 					}
-					if ((markerColor & 0xFF000000) != 0) {
-						markerColor &= 0xFFFFFF;
-						Entity markerEntity = Entity.spawn(new Vector2f(x, y));
-						markerEntity.addComponent(new ComponentMarker(markerColor));
-					}
+
+					Entity entity = tile.createEntity(new Vector2f(x, y), metaColor);
+					entitiesPerTile.get(tile).add(entity);
+				}
+				if ((markerColor & 0xFF000000) != 0) {
+					markerColor &= 0xFFFFFF;
+					Entity markerEntity = Entity.spawn(new Vector2f(x, y));
+					markerEntity.addComponent(new ComponentMarker(markerColor));
 				}
 			}
-		} catch (IOException e) {
-			Logger.getErrorStream().printf("Could not load map file: %s", foldername);
-			e.printStackTrace();
 		}
 
 		// build mesh for all stationary tiles
