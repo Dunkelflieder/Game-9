@@ -80,22 +80,28 @@ public class Entity {
 		return id;
 	}
 
-	public void teleport(Vector2f to) {
-		if (to.equals(position)) {
+	public void teleport(float x, float y) {
+		if (position.getX() == x && position.getY() == y) {
 			return;
 		}
 		Vector2f from = position.clone();
-		position.set(to);
+		position.setX(x);
+		position.setY(y);
 		moveLookup(from.getX(), from.getY(), position.getX(), position.getY());
 		Event.trigger(new EventEntityMoved(this, from, position.clone()));
 	}
 
-	public void move(Vector2f delta) {
-		if (delta.getX() == 0 && delta.getY() == 0) {
+	public void teleport(Vector2f position) {
+		teleport(position.getX(), position.getY());
+	}
+
+	public void move(float x, float y) {
+		if (x == 0 && y == 0) {
 			return;
 		}
 		Vector2f from = position.clone();
-		position.add(delta);
+		position.addX(x);
+		position.addY(y);
 		moveLookup(from.getX(), from.getY(), position.getX(), position.getY());
 		Event.trigger(new EventEntityMoved(this, from, position.clone()));
 	}
@@ -103,7 +109,7 @@ public class Entity {
 	/**
 	 * Getter for the position of this entity.
 	 * DO NOT directly modify the vector returned by this, instead
-	 * use the {@link #teleport(Vector2f)} or {@link #move(Vector2f)} method instead.
+	 * use the {@link #teleport(float, float)} or {@link #move(float, float)} method instead.
 	 *
 	 * @return position of this entity
 	 */
@@ -298,10 +304,12 @@ public class Entity {
 		}
 		components.put(entity, component);
 		Entity previousOwner = component.getOwner();
+		component.setOwner(entity);
 		if (previousOwner != null) {
 			previousOwner.removeComponent(component.getClass());
+		} else {
+			component.init();
 		}
-		component.setOwner(entity);
 		entity.throwOnMissingDependencies();
 	}
 
@@ -340,19 +348,19 @@ public class Entity {
 
 	////////////////// Entity Lookup Code //////////////////
 
-	private static Map<Vector2i, List<Entity>> entityLookup = new HashMap<>();
+	private static Map<Vector2i, Set<Entity>> entityLookup = new HashMap<>();
 	private static Vector2i temp = new Vector2i();
 
-	public static List<Entity> getAt(int x, int y) {
+	public static Set<Entity> getAt(int x, int y) {
 		Vector2i pos = getTempVector(x, y);
 		if (!entityLookup.containsKey(pos)) {
 			// clone temp to avoid mutation of the HashMap key
-			entityLookup.put(pos.clone(), new ArrayList<>());
+			entityLookup.put(pos.clone(), new HashSet<>());
 		}
 		return entityLookup.get(pos);
 	}
 
-	public static List<Entity> getAt(float x, float y) {
+	public static Set<Entity> getAt(float x, float y) {
 		return getAt((int) Math.floor(x), (int) Math.floor(y));
 	}
 
@@ -360,7 +368,7 @@ public class Entity {
 		Vector2i pos = getTempVector(x, y);
 		if (!entityLookup.containsKey(pos)) {
 			// clone temp to avoid mutation of the HashMap key
-			entityLookup.put(pos.clone(), new ArrayList<>());
+			entityLookup.put(pos.clone(), new HashSet<>());
 		}
 		entityLookup.get(pos).add(this);
 	}

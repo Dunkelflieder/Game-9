@@ -39,6 +39,7 @@ public abstract class Component {
 		return true;
 	}
 
+	public void init() {}
 	public void destroy() {}
 
 	public String getName() {
