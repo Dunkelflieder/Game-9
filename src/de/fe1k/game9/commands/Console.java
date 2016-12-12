@@ -12,9 +12,6 @@ import de.nerogar.noise.util.Logger;
 import de.nerogar.noise.util.Matrix4f;
 import de.nerogar.noise.util.Matrix4fUtils;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
 import java.util.Queue;
 
@@ -30,10 +27,7 @@ public class Console {
 
 	private boolean                     enabled;
 	private Queue<FontRenderableString> lines;
-	private EventListener<EventUpdate> eventUpdate = this::update;
-
-	private String loggerText;
-	private ByteArrayOutputStream loggerStream;
+	private EventListener<EventUpdate>  eventUpdate = this::update;
 
 	private static final int numLines = 10;
 	private static final int fontSize = 15;
@@ -41,7 +35,6 @@ public class Console {
 	public Console(GLWindow window) {
 		this.window = window;
 		input = "";
-		loggerText = "";
 		projectionMatrix = new Matrix4f();
 		inputColor = new Color(0.0f, 1.0f, 0.0f, 1.0f);
 		linesColor = new Color(1.0f, 1.0f, 1.0f, 1.0f);
@@ -52,8 +45,7 @@ public class Console {
 		updateProjectionMatrix(window.getWidth(), window.getHeight());
 		Event.register(EventUpdate.class, eventUpdate);
 
-		loggerStream = new ByteArrayOutputStream();
-		Logger.addStream(Logger.WARNING, new PrintStream(loggerStream));
+		Logger.addListener(Logger.WARNING, this::addLine);
 	}
 
 	private void addLine(String text) {
@@ -62,15 +54,6 @@ public class Console {
 	}
 
 	private void update(EventUpdate updateEvent) {
-		loggerText += new String(loggerStream.toByteArray(), StandardCharsets.UTF_8);
-		loggerStream.reset();
-		while (loggerText.contains("\n")) {
-			String[] parts = loggerText.split("\n", 2);
-			loggerText = parts[1];
-			addLine(parts[0]);
-		}
-
-		String newText = window.getInputHandler().getInputText();
 		for (KeyboardKeyEvent keyEvent : window.getInputHandler().getKeyboardKeyEvents()) {
 			boolean isTriggered = keyEvent.action == GLFW_PRESS || keyEvent.action == GLFW_REPEAT;
 			if (!isTriggered) continue;
@@ -87,6 +70,7 @@ public class Console {
 				input = "";
 			}
 		}
+		String newText = window.getInputHandler().getInputText();
 		if (!enabled) return;
 		if (newText.matches("\\A\\p{ASCII}*\\z")) {
 			// only ASCII support
