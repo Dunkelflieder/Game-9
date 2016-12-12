@@ -21,6 +21,8 @@ import java.util.List;
 
 public class Game {
 
+	private static final float ZOOM = 1/32f;
+
 	public static  GLWindow           window;
 	public static  DeferredRenderer   renderer;
 	private        OrthographicCamera camera;
@@ -69,13 +71,13 @@ public class Game {
 		window.setSizeChangeListener((int width, int height) -> {
 			renderer.setFrameBufferResolution(width, height);
 			camera.setAspect((float) width / height);
-			camera.setHeight((float) height / 32);
+			camera.setHeight((float) height * ZOOM);
 			console.updateProjectionMatrix(width, height);
 		});
 	}
 
 	private void setUpCamera() {
-		camera = new OrthographicCamera((float) window.getHeight() / 32, (float) window.getWidth() / window.getHeight(), 100, -100);
+		camera = new OrthographicCamera((float) window.getHeight() * ZOOM, (float) window.getWidth() / window.getHeight(), 100, -100);
 		camera.setXYZ(10, 10, 10);
 	}
 
