@@ -118,14 +118,23 @@ public class SystemPhysics implements GameSystem {
 				}
 				Vector2f escapeVector = escape.get();
 				/* Determine whether the collision happened in horizontal direction (left and right sides touching),
-				 * or not (top and bottom touching):
-				 * If the delta movement's (positive) slope is steeper than the escape vector's (positive)
-				 * slope, the collision was vertical, otherwise horizontal.
-				 * This can also be expressed as whether slope1/slope2 has an incline of > 100%
-				 * (aka the x component is bigger than the y-component).
+  				 * or not (top and bottom touching):
+ 				 * 1.) If the delta movement and the escape vector point in the same direction in either dimension,
+ 				 *     assume the collision is orthogonal to that.
+ 				 * 2.) If the delta movement's (positive) slope is steeper than the escape vector's (positive)
+ 				 *     slope, the collision was vertical, otherwise horizontal.
+ 				 *     This can also be expressed as whether slope1/slope2 has an incline of > 100%
+ 				 *     (aka the x component is bigger than the y-component).
 				 */
-				boolean horizontal = Math.abs(deltaMoved.getX() / escapeVector.getX())
-						> Math.abs(deltaMoved.getY() / escapeVector.getY());
+				boolean horizontal;
+				if (deltaMoved.getX() * escapeVector.getX() > 0) {
+					horizontal = false;  // collision "from inside", can't be horizontal
+				} else if (deltaMoved.getY() * escapeVector.getY() > 0) {
+					horizontal = true;  // collision "from inside", can't be vertical
+				} else {
+					horizontal = Math.abs(deltaMoved.getX() / escapeVector.getX())
+							> Math.abs(deltaMoved.getY() / escapeVector.getY());
+				}
 				Direction collisionDirection;
 				if (horizontal) {
 					escapeVector.setY(0);
