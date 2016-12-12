@@ -1,5 +1,6 @@
 package de.fe1k.game9;
 
+import de.fe1k.game9.commands.Console;
 import de.fe1k.game9.components.ComponentPlayer;
 import de.fe1k.game9.entities.Entity;
 import de.fe1k.game9.events.Event;
@@ -15,7 +16,6 @@ import de.nerogar.noise.render.RenderHelper;
 import de.nerogar.noise.render.deferredRenderer.DeferredRenderer;
 import de.nerogar.noise.util.Timer;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +28,8 @@ public class Game {
 	private        long               lastFpsUpdate;
 	private        List<GameSystem>   systems;
 
+	private Console console;
+
 	public Game() {
 		timer = new Timer();
 		systems = new ArrayList<>();
@@ -36,16 +38,12 @@ public class Game {
 		setUpCamera();
 		setUpRenderer();
 		setUpSystems();
+		console = new Console(window);
 		start();
 	}
 
 	private void start() {
 		MapLoader.loadMap(renderer, "res/map/map_dungeon0");
-		try {
-			Network.startServer(4200);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 
 	private void setUpSystems() {
@@ -72,6 +70,7 @@ public class Game {
 			renderer.setFrameBufferResolution(width, height);
 			camera.setAspect((float) width / height);
 			camera.setHeight((float) height / 32);
+			console.updateProjectionMatrix(width, height);
 		});
 	}
 
@@ -96,7 +95,9 @@ public class Game {
 		float targetDelta = 1 / 60f;
 		timer.update(targetDelta);
 		displayFPS();
-		Event.trigger(new EventUpdate(targetDelta));
+		boolean shouldUpdate = Network.isStarted() && (!Network.isServer() || Network.getClients().size() > 0);
+		shouldUpdate = true;
+		Event.trigger(new EventUpdate(shouldUpdate ? targetDelta : 0));
 		Event.trigger(new EventBeforeRender(targetDelta, timer.getRuntime()));
 
 		ComponentPlayer player = Entity.getFirstComponent(ComponentPlayer.class);
@@ -107,6 +108,7 @@ public class Game {
 		}
 
 		renderer.render(camera);
+		console.render();
 		window.bind();
 		RenderHelper.blitTexture(renderer.getColorOutput());
 	}
@@ -119,6 +121,7 @@ public class Game {
 	}
 
 	private void shutdown() {
+		if (Network.isStarted()) Network.shutdown();
 		//Entity.despawnAll();  // too slow
 		systems.forEach(GameSystem::stop);
 	}

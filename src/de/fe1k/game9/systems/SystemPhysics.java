@@ -3,10 +3,8 @@ package de.fe1k.game9.systems;
 import de.fe1k.game9.components.ComponentBounding;
 import de.fe1k.game9.components.ComponentMoving;
 import de.fe1k.game9.entities.Entity;
-import de.fe1k.game9.events.Event;
-import de.fe1k.game9.events.EventCollision;
+import de.fe1k.game9.events.*;
 import de.fe1k.game9.events.EventListener;
-import de.fe1k.game9.events.EventUpdate;
 import de.fe1k.game9.utils.Bounding;
 import de.fe1k.game9.utils.Direction;
 import de.nerogar.noise.util.Vector2f;
@@ -14,9 +12,17 @@ import de.nerogar.noise.util.Vector2f;
 import java.util.*;
 
 public class SystemPhysics implements GameSystem {
+
 	public static final Vector2f GRAVITY = new Vector2f(0f, -100);  // feels more responsive!
 
 	private EventListener<EventUpdate> eventUpdate = this::update;
+
+	public SystemPhysics() {
+		Event.register(EventTogglePhysics.class, event -> {
+			if (event.enabled) start();
+			else stop();
+		});
+	}
 
 	@Override
 	public void start() {
@@ -90,7 +96,7 @@ public class SystemPhysics implements GameSystem {
 		// apply forces
 		comp.velocity.add(comp.gravity.multiplied(deltaTime));
 		float friction = touchingAny ? comp.friction : comp.airFriction;
-		comp.velocity.multiply(1 - (friction *deltaTime));
+		comp.velocity.multiply(1 - (friction * deltaTime));
 		newPosition.add(comp.velocity.multiplied(deltaTime));
 
 		// continue with collision detection
@@ -113,22 +119,13 @@ public class SystemPhysics implements GameSystem {
 				Vector2f escapeVector = escape.get();
 				/* Determine whether the collision happened in horizontal direction (left and right sides touching),
 				 * or not (top and bottom touching):
-				 * 1.) If the delta movement and the escape vector point in the same direction in either dimension,
-				 *     assume the collision is orthogonal to that.
-				 * 2.) If the delta movement's (positive) slope is steeper than the escape vector's (positive)
-				 *     slope, the collision was vertical, otherwise horizontal.
-				 *     This can also be expressed as whether slope1/slope2 has an incline of > 100%
-				 *     (aka the x component is bigger than the y-component).
+				 * If the delta movement's (positive) slope is steeper than the escape vector's (positive)
+				 * slope, the collision was vertical, otherwise horizontal.
+				 * This can also be expressed as whether slope1/slope2 has an incline of > 100%
+				 * (aka the x component is bigger than the y-component).
 				 */
-				boolean horizontal;
-				if (deltaMoved.getX() * escapeVector.getX() > 0) {
-					horizontal = false;  // collision "from inside", can't be horizontal
-				} else if (deltaMoved.getY() * escapeVector.getY() > 0) {
-					horizontal = true;  // collision "from inside", can't be vertical
-				} else {
-					horizontal = Math.abs(deltaMoved.getX() / escapeVector.getX())
-							> Math.abs(deltaMoved.getY() / escapeVector.getY());
-				}
+				boolean horizontal = Math.abs(deltaMoved.getX() / escapeVector.getX())
+						> Math.abs(deltaMoved.getY() / escapeVector.getY());
 				Direction collisionDirection;
 				if (horizontal) {
 					escapeVector.setY(0);

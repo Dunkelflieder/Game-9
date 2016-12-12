@@ -8,43 +8,60 @@ import de.nerogar.noise.input.KeyboardKeyEvent;
 import de.nerogar.noise.util.Logger;
 import org.lwjgl.glfw.GLFW;
 
+import static org.lwjgl.glfw.GLFW.*;
+
 @Depends(components = { ComponentMoving.class })
 public class ComponentControllable extends Component {
 
 	private InputHandler inputs;
 	private float   jumpPower  = 0;
 	private boolean wasKeyDown = false;
+	private boolean flymode    = false;
 
 	private int   targetMoveDirection = 1;
 	private float moveDirection       = targetMoveDirection;
 
-	private EventListener<EventUpdate>    eventUpdate;
-	private EventListener<EventCollision> eventCollision;
+	private EventListener<EventUpdate>        eventUpdate        = this::update;
+	private EventListener<EventCollision>     eventCollision     = this::collision;
+	private EventListener<EventToggleFlymode> eventToggleFlymode = event -> flymode = event.enabled;
 
 	public ComponentControllable(InputHandler inputHandler) {
 		this.inputs = inputHandler;
-		eventUpdate = this::update;
-		eventCollision = this::collision;
 		Event.register(EventUpdate.class, eventUpdate);
 		Event.register(EventCollision.class, eventCollision);
+		Event.register(EventToggleFlymode.class, eventToggleFlymode);
+	}
+
+	private void updateFlymode(EventUpdate event) {
+
 	}
 
 	private void update(EventUpdate event) {
 		ComponentMoving moving = getOwner().getComponent(ComponentMoving.class);
-		boolean isKeyDown = inputs.isKeyDown(' ');
-		boolean onGround = moving.touching[Direction.DOWN.val];
 
-		if (onGround) {
-			jumpPower = 1;
+		if (flymode) {
+			moving.velocity.set(0);
+			float speed = 20 * event.deltaTime;
+			if (inputs.isKeyDown(GLFW_KEY_UP)) getOwner().move(0, speed);
+			if (inputs.isKeyDown(GLFW_KEY_DOWN)) getOwner().move(0, -speed);
+			if (inputs.isKeyDown(GLFW_KEY_RIGHT)) getOwner().move(speed, 0);
+			if (inputs.isKeyDown(GLFW_KEY_LEFT)) getOwner().move(-speed, 0);
+		} else {
+			boolean isKeyDown = inputs.isKeyDown(GLFW_KEY_SPACE);
+			boolean onGround = moving.touching[Direction.DOWN.val];
+
+			if (onGround) {
+				jumpPower = 1;
+			}
+
+			if (isKeyDown && !(onGround && wasKeyDown)) {
+				moving.velocity.add(moving.gravity.multiplied(-0.09f * jumpPower));
+				jumpPower *= 1 - (10 * event.deltaTime);
+			}
+
+			moving.velocity.setX(10f * moveDirection);
+			wasKeyDown = isKeyDown;
 		}
-
-		if (isKeyDown && !(onGround && wasKeyDown)) {
-			moving.velocity.add(moving.gravity.multiplied(-0.09f * jumpPower));
-			jumpPower *= 1 - (10 * event.deltaTime);
-		}
-
-		moving.velocity.setX(10f * moveDirection);
-		wasKeyDown = isKeyDown;
 
 		for (KeyboardKeyEvent keyboardKeyEvent : inputs.getKeyboardKeyEvents()) {
 			if (keyboardKeyEvent.action == GLFW.GLFW_PRESS && keyboardKeyEvent.key == GLFW.GLFW_KEY_ENTER) {
@@ -81,6 +98,7 @@ public class ComponentControllable extends Component {
 	public void destroy() {
 		Event.unregister(EventUpdate.class, eventUpdate);
 		Event.unregister(EventCollision.class, eventCollision);
+		Event.unregister(EventToggleFlymode.class, eventToggleFlymode);
 	}
 
 }
