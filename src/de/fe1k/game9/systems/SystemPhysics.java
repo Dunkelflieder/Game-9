@@ -15,23 +15,28 @@ public class SystemPhysics implements GameSystem {
 
 	public static final Vector2f GRAVITY = new Vector2f(0f, -100);  // feels more responsive!
 
-	private EventListener<EventUpdate> eventUpdate = this::update;
+	private boolean physicsEnabled    = true;
+	private boolean collisionsEnabled = true;
+
+	private EventListener<EventUpdate>           eventUpdate           = this::update;
+	private EventListener<EventTogglePhysics>    eventTogglePhysics    = event -> physicsEnabled = event.enabled;
+	private EventListener<EventToggleCollisions> eventToggleCollisions = event -> collisionsEnabled = event.enabled;
 
 	public SystemPhysics() {
-		Event.register(EventTogglePhysics.class, event -> {
-			if (event.enabled) start();
-			else stop();
-		});
 	}
 
 	@Override
 	public void start() {
 		Event.register(EventUpdate.class, eventUpdate);
+		Event.register(EventTogglePhysics.class, eventTogglePhysics);
+		Event.register(EventToggleCollisions.class, eventToggleCollisions);
 	}
 
 	@Override
 	public void stop() {
 		Event.unregister(EventUpdate.class, eventUpdate);
+		Event.unregister(EventTogglePhysics.class, eventTogglePhysics);
+		Event.unregister(EventToggleCollisions.class, eventToggleCollisions);
 	}
 
 	private void update(EventUpdate event) {
@@ -94,15 +99,17 @@ public class SystemPhysics implements GameSystem {
 		}
 
 		// apply forces
-		comp.velocity.add(comp.gravity.multiplied(deltaTime));
-		float friction = touchingAny ? comp.friction : comp.airFriction;
-		comp.velocity.multiply(1 - (friction * deltaTime));
-		newPosition.add(comp.velocity.multiplied(deltaTime));
+		if (physicsEnabled) {
+			comp.velocity.add(comp.gravity.multiplied(deltaTime));
+			float friction = touchingAny ? comp.friction : comp.airFriction;
+			comp.velocity.multiply(1 - (friction * deltaTime));
+			newPosition.add(comp.velocity.multiplied(deltaTime));
+		}
 
 		// continue with collision detection
 		List<EventCollision> collisions = new ArrayList<>();
 		ComponentBounding boundingComponent = entity.getComponent(ComponentBounding.class);
-		if (boundingComponent != null) {
+		if (boundingComponent != null && collisionsEnabled) {
 			int x = (int) Math.floor(entity.getPosition().getX());
 			int y = (int) Math.floor(entity.getPosition().getY());
 
