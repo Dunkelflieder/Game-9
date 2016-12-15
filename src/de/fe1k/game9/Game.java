@@ -63,6 +63,7 @@ public class Game {
 
 		renderer.setSunLightBrightness(0);
 		renderer.setAmbientOcclusionEnabled(false);
+		renderer.setAntiAliasingEnabled(false);
 		renderer.setMinAmbientBrightness(0.1f);
 	}
 
