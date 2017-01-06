@@ -1,0 +1,15 @@
+{
+	"noise": {
+		"resourceDir": "noiseEngine/"
+	},
+
+	"profiler": {
+		"enabled": true,
+		"historySize": 1024
+	},
+
+	"deferredRenderer": {
+		"showAxis": false
+	}
+
+}
