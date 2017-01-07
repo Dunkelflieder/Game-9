@@ -35,7 +35,7 @@ public class Game {
 	public Game() {
 		timer = new Timer();
 		systems = new ArrayList<>();
-		Noise.init();
+		Noise.init("noiseSettings.json");
 		setUpWindow();
 		setUpCamera();
 		setUpRenderer();
