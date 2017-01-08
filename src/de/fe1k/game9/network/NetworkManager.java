@@ -18,6 +18,7 @@ import java.util.List;
 
 class NetworkManager {
 	private static final int CHANNEL_EVENTS = 0x4200;
+	private static final int CHANNEL_META   = 0x4201;
 
 	private boolean server;
 	private static boolean started;
@@ -25,6 +26,7 @@ class NetworkManager {
 	private ServerThread     serverThread;
 	private Connection       serverConnection;
 	private List<Connection> clients;
+	private int              clientId;
 
 	private EventListener<EventUpdate>    eventUpdateServer = this::updateServer;
 	private EventListener<EventUpdate>    eventUpdateClient = this::updateClient;
@@ -33,6 +35,7 @@ class NetworkManager {
 
 	static {
 		Packets.addPacket(CHANNEL_EVENTS, PacketNetworkedEvent.class);
+		Packets.addPacket(CHANNEL_META, PacketSetClientId.class);
 	}
 
 	public NetworkManager() {
@@ -48,23 +51,27 @@ class NetworkManager {
 	}
 
 	private void updateServer(EventUpdate event) {
+		boolean clientIdsDirty = false;
 		// check for disconnected clients
 		Iterator<Connection> clientIter = clients.iterator();
 		while (clientIter.hasNext()) {
 			Connection client = clientIter.next();
 			if (client.isClosed()) {
 				clientIter.remove();
+				clientIdsDirty = true;
 				Event.trigger(new EventClientDisconnected(client));
 			}
 		}
 		// accept new clients
 		for (Connection client : serverThread.getNewConnections()) {
 			clients.add(client);
+			clientIdsDirty = true;
 			Event.trigger(new EventClientConnected(client));
 		}
+		if (clientIdsDirty) updateClientIds();
 		// retrieve and process data from clients
 		for (Connection client : clients) {
-			client.pollPackets(true);
+			client.pollPackets(false);
 			client.getPackets(CHANNEL_EVENTS).forEach(this::handleEventPackets);
 		}
 	}
@@ -77,6 +84,11 @@ class NetworkManager {
 		}
 		serverConnection.pollPackets(true);
 		serverConnection.getPackets(CHANNEL_EVENTS).forEach(this::handleEventPackets);
+		for (Packet packet : serverConnection.getPackets(CHANNEL_META)) {
+			if (packet instanceof PacketSetClientId) {
+				clientId = ((PacketSetClientId) packet).clientId;
+			}
+		}
 	}
 
 	private void broadcastEvent(EventToClients event) {
@@ -93,6 +105,7 @@ class NetworkManager {
 		serverThread = new ServerThread(port);
 		server = true;
 		started = true;
+		clientId = -1;
 		Event.register(EventUpdate.class, eventUpdateServer);
 		Event.register(EventToClients.class, eventToClients);
 	}
@@ -142,6 +155,14 @@ class NetworkManager {
 	public Connection getServer() {
 		if (isServer()) throw new IllegalStateException("Is server itself.");
 		return serverConnection;
+	}
+
+	private void updateClientIds() {
+		for (int i = 0; i < clients.size(); i++) {
+			Connection client = clients.get(i);
+			client.send(new PacketSetClientId(i));
+			client.flushPackets();
+		}
 	}
 
 }
