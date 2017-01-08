@@ -73,6 +73,7 @@ class NetworkManager {
 		for (Connection client : clients) {
 			client.pollPackets(false);
 			client.getPackets(CHANNEL_EVENTS).forEach(this::handleEventPackets);
+			client.flushPackets();
 		}
 	}
 
@@ -89,6 +90,7 @@ class NetworkManager {
 				clientId = ((PacketSetClientId) packet).clientId;
 			}
 		}
+		serverConnection.flushPackets();
 	}
 
 	private void broadcastEvent(EventToClients event) {
@@ -161,7 +163,6 @@ class NetworkManager {
 		for (int i = 0; i < clients.size(); i++) {
 			Connection client = clients.get(i);
 			client.send(new PacketSetClientId(i));
-			client.flushPackets();
 		}
 	}
 
