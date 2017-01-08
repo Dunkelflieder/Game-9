@@ -33,7 +33,7 @@ public class StateMainMenu extends GameState {
 
 	private void update(EventUpdate event) {
 		if (Network.isStarted()) {
-			GameState.transition(new StateWaitingForPlayers());
+			GameState.transition(new StateWaitingForStart());
 		}
 	}
 
