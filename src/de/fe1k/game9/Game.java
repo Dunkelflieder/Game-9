@@ -4,10 +4,13 @@ import de.fe1k.game9.commands.Console;
 import de.fe1k.game9.components.ComponentPlayer;
 import de.fe1k.game9.entities.Entity;
 import de.fe1k.game9.events.Event;
+import de.fe1k.game9.events.EventAfterRender;
 import de.fe1k.game9.events.EventBeforeRender;
 import de.fe1k.game9.events.EventUpdate;
-import de.fe1k.game9.map.MapLoader;
 import de.fe1k.game9.network.Network;
+import de.fe1k.game9.states.GameState;
+import de.fe1k.game9.states.StateIngame;
+import de.fe1k.game9.states.StateMainMenu;
 import de.fe1k.game9.systems.*;
 import de.nerogar.noise.Noise;
 import de.nerogar.noise.render.GLWindow;
@@ -41,11 +44,7 @@ public class Game {
 		setUpRenderer();
 		setUpSystems();
 		console = new Console(window);
-		start();
-	}
-
-	private void start() {
-		MapLoader.loadMap(renderer, "res/map/map_dungeon0");
+		GameState.transition(new StateMainMenu());
 	}
 
 	private void setUpSystems() {
@@ -98,10 +97,10 @@ public class Game {
 		float targetDelta = 1 / 60f;
 		timer.update(targetDelta);
 		displayFPS();
-		boolean shouldUpdate = Network.isStarted() && (!Network.isServer() || Network.getClients().size() > 0);
-		shouldUpdate = true;
+		boolean shouldUpdate = GameState.getCurrent() instanceof StateIngame;
+		//boolean shouldUpdate = Network.isStarted() && (!Network.isServer() || Network.getClients().size() > 0);
 		Event.trigger(new EventUpdate(shouldUpdate ? targetDelta : 0));
-		Event.trigger(new EventBeforeRender(targetDelta, timer.getRuntime()));
+		Event.trigger(new EventBeforeRender(window, targetDelta, timer.getRuntime()));
 
 		ComponentPlayer player = Entity.getFirstComponent(ComponentPlayer.class);
 
@@ -112,6 +111,7 @@ public class Game {
 
 		renderer.render(camera);
 		console.render();
+		Event.trigger(new EventAfterRender(window, targetDelta, timer.getRuntime()));
 		window.bind();
 		RenderHelper.blitTexture(renderer.getColorOutput());
 	}
