@@ -9,13 +9,18 @@ import de.nerogar.noise.util.Logger;
 import java.util.function.Consumer;
 
 public enum ConsoleCommands {
-	PHYSICS   (new OnOffHandler(enabled -> Event.trigger(new EventTogglePhysics(enabled)))),
-	COLLISIONS(new OnOffHandler(enabled -> Event.trigger(new EventToggleCollisions(enabled)))),
-	FLYMODE   (new OnOffHandler(enabled -> {
+	PHYSICS     (new OnOffHandler(enabled -> Event.trigger(new EventTogglePhysics(enabled)))),
+	COLLISIONS  (new OnOffHandler(enabled -> Event.trigger(new EventToggleCollisions(enabled)))),
+	FLYMODE     (new OnOffHandler(enabled -> {
 		Event.trigger(new EventToggleFlymode(enabled));
 		Event.trigger(new EventTogglePhysics(!enabled));
 		Event.trigger(new EventToggleCollisions(!enabled));
-	}));
+	})),
+	CONNECT     (new CommandConnect()),
+	DISCONNECT  (new CommandDisconnect()),
+	STARTSERVER (new CommandStartServer()),
+	STOPSERVER  (new CommandStopServer()),
+	;  // end of enums. keep on separate line for better code diffs
 
 	private static class OnOffHandler implements Consumer<String[]> {
 

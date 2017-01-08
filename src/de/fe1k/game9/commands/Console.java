@@ -79,7 +79,7 @@ public class Console {
 	}
 
 	private void parse(String text) {
-		String[] args = text.split(" ", 2);
+		String[] args = text.trim().split(" ");
 		ConsoleCommands command = ConsoleCommands.getByName(args[0]);
 		if (command == null) {
 			Logger.getErrorStream().printf("Unknown command: %s\n", args[0]);
