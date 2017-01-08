@@ -2,6 +2,7 @@ package de.fe1k.game9.components;
 
 import de.fe1k.game9.entities.Entity;
 import de.fe1k.game9.events.*;
+import de.fe1k.game9.network.Network;
 import de.fe1k.game9.utils.Direction;
 import de.nerogar.noise.input.InputHandler;
 import de.nerogar.noise.input.KeyboardKeyEvent;
@@ -24,12 +25,14 @@ public class ComponentControllable extends Component {
 	private EventListener<EventUpdate>        eventUpdate        = this::update;
 	private EventListener<EventCollision>     eventCollision     = this::collision;
 	private EventListener<EventToggleFlymode> eventToggleFlymode = event -> flymode = event.enabled;
+	private EventListener<EventTurnAround>    eventTurnAround    = this::turnAround;
 
 	public ComponentControllable(InputHandler inputHandler) {
 		this.inputs = inputHandler;
 		Event.register(EventUpdate.class, eventUpdate);
 		Event.register(EventCollision.class, eventCollision);
 		Event.register(EventToggleFlymode.class, eventToggleFlymode);
+		Event.register(EventTurnAround.class, eventTurnAround);
 	}
 
 	private void updateFlymode(EventUpdate event) {
@@ -39,39 +42,48 @@ public class ComponentControllable extends Component {
 	private void update(EventUpdate event) {
 		ComponentMoving moving = getOwner().getComponent(ComponentMoving.class);
 
-		if (flymode) {
-			moving.velocity.set(0);
-			float speed = 20 * event.deltaTime;
-			if (inputs.isKeyDown(GLFW_KEY_UP)) getOwner().move(0, speed);
-			if (inputs.isKeyDown(GLFW_KEY_DOWN)) getOwner().move(0, -speed);
-			if (inputs.isKeyDown(GLFW_KEY_RIGHT)) getOwner().move(speed, 0);
-			if (inputs.isKeyDown(GLFW_KEY_LEFT)) getOwner().move(-speed, 0);
+		if (!Network.isStarted()) return;
+
+		if (Network.isServer()) {
+			if (flymode) {
+				moving.velocity.set(0);
+				float speed = 20 * event.deltaTime;
+				if (inputs.isKeyDown(GLFW_KEY_UP)) getOwner().move(0, speed);
+				if (inputs.isKeyDown(GLFW_KEY_DOWN)) getOwner().move(0, -speed);
+				if (inputs.isKeyDown(GLFW_KEY_RIGHT)) getOwner().move(speed, 0);
+				if (inputs.isKeyDown(GLFW_KEY_LEFT)) getOwner().move(-speed, 0);
+			} else {
+				boolean isKeyDown = inputs.isKeyDown(GLFW_KEY_SPACE);
+				boolean onGround = moving.touching[Direction.DOWN.val];
+
+				if (onGround) {
+					jumpPower = 1;
+				}
+
+				if (isKeyDown && !(onGround && wasKeyDown)) {
+					moving.velocity.add(moving.gravity.multiplied(-0.09f * jumpPower));
+					jumpPower *= 1 - (10 * event.deltaTime);
+				}
+
+				moving.velocity.setX(10f * moveDirection);
+				wasKeyDown = isKeyDown;
+			}
 		} else {
-			boolean isKeyDown = inputs.isKeyDown(GLFW_KEY_SPACE);
-			boolean onGround = moving.touching[Direction.DOWN.val];
-
-			if (onGround) {
-				jumpPower = 1;
-			}
-
-			if (isKeyDown && !(onGround && wasKeyDown)) {
-				moving.velocity.add(moving.gravity.multiplied(-0.09f * jumpPower));
-				jumpPower *= 1 - (10 * event.deltaTime);
-			}
-
-			moving.velocity.setX(10f * moveDirection);
-			wasKeyDown = isKeyDown;
-		}
-
-		for (KeyboardKeyEvent keyboardKeyEvent : inputs.getKeyboardKeyEvents()) {
-			if (keyboardKeyEvent.action == GLFW.GLFW_PRESS && keyboardKeyEvent.key == GLFW.GLFW_KEY_ENTER) {
-				targetMoveDirection *= -1;
+			for (KeyboardKeyEvent keyboardKeyEvent : inputs.getKeyboardKeyEvents()) {
+				if (keyboardKeyEvent.action == GLFW.GLFW_PRESS && keyboardKeyEvent.key == GLFW.GLFW_KEY_ENTER) {
+					Event.trigger(new EventTurnAround());
+				}
 			}
 		}
+
 		if (moveDirection < targetMoveDirection) moveDirection += 10 * event.deltaTime;
 		if (moveDirection > targetMoveDirection) moveDirection -= 10 * event.deltaTime;
 		getOwner().getScale().setX(moveDirection);
 
+	}
+
+	private void turnAround(EventTurnAround event) {
+		targetMoveDirection *= -1;
 	}
 
 	private void collision(EventCollision event) {
@@ -99,6 +111,7 @@ public class ComponentControllable extends Component {
 		Event.unregister(EventUpdate.class, eventUpdate);
 		Event.unregister(EventCollision.class, eventCollision);
 		Event.unregister(EventToggleFlymode.class, eventToggleFlymode);
+		Event.unregister(EventTurnAround.class, eventTurnAround);
 	}
 
 }
