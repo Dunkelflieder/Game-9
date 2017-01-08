@@ -3,11 +3,7 @@ package de.fe1k.game9.events;
 import de.fe1k.game9.entities.Entity;
 import de.nerogar.noise.util.Vector2f;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-
-public class EventEntityMoved implements EventNetworked {
+public class EventEntityMoved implements Event {
 
 	public Entity   entity;
 	public Vector2f from;
@@ -31,19 +27,4 @@ public class EventEntityMoved implements EventNetworked {
 				'}';
 	}
 
-	@Override
-	public void fromStream(DataInputStream in) throws IOException {
-		entity = Entity.getById(in.readLong());
-		from = new Vector2f(in.readFloat(), in.readFloat());
-		to = new Vector2f(in.readFloat(), in.readFloat());
-	}
-
-	@Override
-	public void toStream(DataOutputStream out) throws IOException {
-		out.writeLong(entity.getId());
-		out.writeFloat(from.getX());
-		out.writeFloat(from.getY());
-		out.writeFloat(to.getX());
-		out.writeFloat(to.getY());
-	}
 }

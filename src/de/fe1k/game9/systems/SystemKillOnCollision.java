@@ -6,6 +6,7 @@ import de.fe1k.game9.entities.Entity;
 import de.fe1k.game9.events.Event;
 import de.fe1k.game9.events.EventCollision;
 import de.fe1k.game9.events.EventListener;
+import de.fe1k.game9.network.Network;
 
 public class SystemKillOnCollision implements GameSystem {
 
@@ -21,6 +22,8 @@ public class SystemKillOnCollision implements GameSystem {
 	}
 
 	private void entityCollision(EventCollision event) {
+		// only server does this logic
+		if (!Network.isStarted() || !Network.isServer()) return;
 		if (!event.obstacle.getOwner().hasComponent(ComponentKillOnCollision.class)) return;
 
 		Entity movingEntity = event.movingComponent.getOwner();

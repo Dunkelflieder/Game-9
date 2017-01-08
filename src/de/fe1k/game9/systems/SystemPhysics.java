@@ -5,8 +5,10 @@ import de.fe1k.game9.components.ComponentMoving;
 import de.fe1k.game9.entities.Entity;
 import de.fe1k.game9.events.*;
 import de.fe1k.game9.events.EventListener;
+import de.fe1k.game9.network.Network;
 import de.fe1k.game9.utils.Bounding;
 import de.fe1k.game9.utils.Direction;
+import de.nerogar.noise.util.Logger;
 import de.nerogar.noise.util.Vector2f;
 
 import java.util.*;
@@ -22,6 +24,9 @@ public class SystemPhysics implements GameSystem {
 	private EventListener<EventTogglePhysics>    eventTogglePhysics    = event -> physicsEnabled = event.enabled;
 	private EventListener<EventToggleCollisions> eventToggleCollisions = event -> collisionsEnabled = event.enabled;
 
+	private EventListener<EventEntityMoved>                   eventEntityMoved                   = this::entityMoved;
+	private EventListener<EventEntityUpdatePositionNetworked> eventEntityUpdatePositionNetworked = this::entityUpdatePositionNetworked;
+
 	public SystemPhysics() {
 	}
 
@@ -30,6 +35,9 @@ public class SystemPhysics implements GameSystem {
 		Event.register(EventUpdate.class, eventUpdate);
 		Event.register(EventTogglePhysics.class, eventTogglePhysics);
 		Event.register(EventToggleCollisions.class, eventToggleCollisions);
+
+		Event.register(EventEntityMoved.class, eventEntityMoved);
+		Event.register(EventEntityUpdatePositionNetworked.class, eventEntityUpdatePositionNetworked);
 	}
 
 	@Override
@@ -37,9 +45,14 @@ public class SystemPhysics implements GameSystem {
 		Event.unregister(EventUpdate.class, eventUpdate);
 		Event.unregister(EventTogglePhysics.class, eventTogglePhysics);
 		Event.unregister(EventToggleCollisions.class, eventToggleCollisions);
+
+		Event.unregister(EventEntityMoved.class, eventEntityMoved);
+		Event.unregister(EventEntityUpdatePositionNetworked.class, eventEntityUpdatePositionNetworked);
 	}
 
 	private void update(EventUpdate event) {
+		// only server does this logic
+		if (!Network.isStarted() || !Network.isServer()) return;
 		for (ComponentMoving componentMoving : Entity.getComponents(ComponentMoving.class)) {
 			updateOne(event.deltaTime, componentMoving);
 		}
@@ -165,6 +178,22 @@ public class SystemPhysics implements GameSystem {
 				comp.velocity.setY(0);
 			}
 			Event.trigger(collision);
+		}
+	}
+
+	private void entityMoved(EventEntityMoved event) {
+		if (Network.isStarted() && Network.isServer()) {
+			Event.trigger(new EventEntityUpdatePositionNetworked(event.entity, event.to));
+		}
+	}
+
+	private void entityUpdatePositionNetworked(EventEntityUpdatePositionNetworked event) {
+		if (Network.isStarted() && !Network.isServer()) {
+			if (event.entity == null) {
+				Logger.log(Logger.WARNING, "Received position update for unknown entity.");
+				return;
+			}
+			event.entity.teleport(event.to);
 		}
 	}
 
